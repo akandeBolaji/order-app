@@ -20,6 +20,9 @@ try {
  */
 
 window.axios = require('axios');
+window.api = window.axios;
+
+window.key = process.env.GOOGLE_API_KEY;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
