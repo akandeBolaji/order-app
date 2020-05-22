@@ -4,7 +4,7 @@
         <header id="header">
              <span @click="goBack"> Back</span> <span class="text-center">  Pickup Address</span>
         </header>
-        <input type="text" v-model="pickup" ref="pick">
+        <input type="text" id='filtro' v-model="pickup" data-type="search" ref="pick">
     </div>
 </template>
 
