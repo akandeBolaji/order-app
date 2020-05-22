@@ -4,7 +4,7 @@
             <header id="header" class="text-center">
                 Parcel request
             </header>
-            <input type="text" @focus="openPickup()" v-model="pickup" placeholder="Pickup Address">
+            <input type="text" @focus="openPickup()" v-model="pickup" placeholder="Pickup Address" ref="picks">
             <input type="text" @focus="openDropoff()" v-model="dropoff" placeholder="Dropoff Address">
         </div>
         <Map :class="checkout ? 'map-with-checkout' : 'full-map'"/>
@@ -14,18 +14,23 @@
     </div>
 </template>
 <script>
+  import { bus } from '../app';
   import Map from './Map.vue';
   export default {
     data() {
       return {
           checkout: false,
-          pickup: '',
-          dropoff: '',
+          pickup: this.$store.getters.pickup,
+          dropoff: this.$store.getters.dropoff,
       }
     },
     components: {
         Map
     },
+    mounted() {
+
+    },
+
     methods: {
         openPickup() {
             //emit event on master

@@ -1,23 +1,36 @@
 <template>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">Dropoff Component</div>
+    <div class="form card">
 
-                    <div class="card-body">
-                        I'm an example component.
-                    </div>
-                </div>
-            </div>
-        </div>
+        <header id="header">
+             <span @click="goBack"> Back</span> <span class="text-center">  Dropoff Address</span>
+        </header>
+        <input type="text" v-model="dropoff" ref="pick">
     </div>
 </template>
 
 <script>
+    import { bus } from '../app'
     export default {
+         data() {
+            return {
+                dropoff: this.$store.getters.dropoff,
+                pickup: '',
+            }
+        },
         mounted() {
+            this.focusInput();
             console.log('Component mounted.')
+        },
+        methods: {
+            focusInput() {
+                this.$refs.pick.focus();
+            },
+            goBack() {
+                this.$emit('closeDropoff', {
+                    'pickup' : this.pickup
+                });
+                this.$store.commit('changeDropoff', this.dropoff)
+            }
         }
     }
 </script>

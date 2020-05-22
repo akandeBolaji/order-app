@@ -9,10 +9,11 @@
 </template>
 
 <script>
+    import { bus } from '../app'
     export default {
          data() {
             return {
-                pickup: '',
+                pickup: this.$store.getters.pickup,
                 dropoff: '',
             }
         },
@@ -28,6 +29,8 @@
                 this.$emit('closePickup', {
                     'pickup' : this.pickup
                 });
+                this.$store.commit('changePickup', this.pickup)
+                bus.$emit('pickup', this.pickup);
             }
         }
     }

@@ -1953,6 +1953,9 @@ __webpack_require__.r(__webpack_exports__);
     },
     closePickup: function closePickup(value) {
       this.active = 'home';
+    },
+    closeDropoff: function closeDropoff(value) {
+      this.active = 'home';
     }
   }
 });
@@ -1968,45 +1971,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-/* harmony default export */ __webpack_exports__["default"] = ({
-  mounted: function mounted() {
-    console.log('Component mounted.');
-  }
-});
-
-/***/ }),
-
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Home.vue?vue&type=script&lang=js&":
-/*!***************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Home.vue?vue&type=script&lang=js& ***!
-  \***************************************************************************************************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Map_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Map.vue */ "./resources/js/components/Map.vue");
-//
-//
-//
-//
-//
+/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../app */ "./resources/js/app.js");
 //
 //
 //
@@ -2021,14 +1986,69 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      dropoff: this.$store.getters.dropoff,
+      pickup: ''
+    };
+  },
+  mounted: function mounted() {
+    this.focusInput();
+    console.log('Component mounted.');
+  },
+  methods: {
+    focusInput: function focusInput() {
+      this.$refs.pick.focus();
+    },
+    goBack: function goBack() {
+      this.$emit('closeDropoff', {
+        'pickup': this.pickup
+      });
+      this.$store.commit('changeDropoff', this.dropoff);
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Home.vue?vue&type=script&lang=js&":
+/*!***************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Home.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../app */ "./resources/js/app.js");
+/* harmony import */ var _Map_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Map.vue */ "./resources/js/components/Map.vue");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
       checkout: false,
-      pickup: '',
-      dropoff: ''
+      pickup: this.$store.getters.pickup,
+      dropoff: this.$store.getters.dropoff
     };
   },
   components: {
-    Map: _Map_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+    Map: _Map_vue__WEBPACK_IMPORTED_MODULE_1__["default"]
   },
+  mounted: function mounted() {},
   methods: {
     openPickup: function openPickup() {
       //emit event on master
@@ -2117,6 +2137,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../app */ "./resources/js/app.js");
 //
 //
 //
@@ -2127,10 +2148,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      pickup: '',
+      pickup: this.$store.getters.pickup,
       dropoff: ''
     };
   },
@@ -2146,6 +2168,8 @@ __webpack_require__.r(__webpack_exports__);
       this.$emit('closePickup', {
         'pickup': this.pickup
       });
+      this.$store.commit('changePickup', this.pickup);
+      _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$emit('pickup', this.pickup);
     }
   }
 });
@@ -40306,7 +40330,13 @@ var render = function() {
             }
           })
         : _vm.active == "dropoff"
-        ? _c("Dropoff")
+        ? _c("Dropoff", {
+            on: {
+              closeDropoff: function($event) {
+                return _vm.closeDropoff($event)
+              }
+            }
+          })
         : _c("Home", {
             on: {
               openDropoff: function($event) {
@@ -40343,32 +40373,37 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", { staticClass: "form card" }, [
+    _c("header", { attrs: { id: "header" } }, [
+      _c("span", { on: { click: _vm.goBack } }, [_vm._v(" Back")]),
+      _vm._v(" "),
+      _c("span", { staticClass: "text-center" }, [_vm._v("  Dropoff Address")])
+    ]),
+    _vm._v(" "),
+    _c("input", {
+      directives: [
+        {
+          name: "model",
+          rawName: "v-model",
+          value: _vm.dropoff,
+          expression: "dropoff"
+        }
+      ],
+      ref: "pick",
+      attrs: { type: "text" },
+      domProps: { value: _vm.dropoff },
+      on: {
+        input: function($event) {
+          if ($event.target.composing) {
+            return
+          }
+          _vm.dropoff = $event.target.value
+        }
+      }
+    })
+  ])
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "container" }, [
-      _c("div", { staticClass: "row justify-content-center" }, [
-        _c("div", { staticClass: "col-md-8" }, [
-          _c("div", { staticClass: "card" }, [
-            _c("div", { staticClass: "card-header" }, [
-              _vm._v("Dropoff Component")
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "card-body" }, [
-              _vm._v(
-                "\n                    I'm an example component.\n                "
-              )
-            ])
-          ])
-        ])
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -40408,6 +40443,7 @@ var render = function() {
               expression: "pickup"
             }
           ],
+          ref: "picks",
           attrs: { type: "text", placeholder: "Pickup Address" },
           domProps: { value: _vm.pickup },
           on: {
@@ -53890,11 +53926,12 @@ __webpack_require__.r(__webpack_exports__);
 /*!*****************************!*\
   !*** ./resources/js/app.js ***!
   \*****************************/
-/*! no exports provided */
+/*! exports provided: bus */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "bus", function() { return bus; });
 /* harmony import */ var es6_promise_auto__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! es6-promise/auto */ "./node_modules/es6-promise/auto.js");
 /* harmony import */ var es6_promise_auto__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(es6_promise_auto__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -53917,7 +53954,9 @@ __webpack_require__.r(__webpack_exports__);
 
 window.Vue = vue__WEBPACK_IMPORTED_MODULE_3___default.a;
 vue__WEBPACK_IMPORTED_MODULE_3___default.a.use(vue_axios__WEBPACK_IMPORTED_MODULE_4___default.a, axios__WEBPACK_IMPORTED_MODULE_1___default.a);
-axios__WEBPACK_IMPORTED_MODULE_1___default.a.defaults.baseURL = "".concat("https://gokada.site", "/api"); // Load Index
+axios__WEBPACK_IMPORTED_MODULE_1___default.a.defaults.baseURL = "".concat("https://gokada.site", "/api"); //create event bus
+
+var bus = new vue__WEBPACK_IMPORTED_MODULE_3___default.a(); // Load Index
 
 vue__WEBPACK_IMPORTED_MODULE_3___default.a.component('index', _Index__WEBPACK_IMPORTED_MODULE_5__["default"]);
 var app = new vue__WEBPACK_IMPORTED_MODULE_3___default.a({
@@ -54296,7 +54335,9 @@ var debug = "development" !== 'production';
 /* harmony default export */ __webpack_exports__["default"] = (new vuex__WEBPACK_IMPORTED_MODULE_2__["default"].Store({
   state: {
     markets: [],
-    search: []
+    search: [],
+    pickup: '',
+    dropoff: ''
   },
   actions: {
     getAllMarkets: function getAllMarkets(_ref) {
@@ -54354,6 +54395,20 @@ var debug = "development" !== 'production';
     },
     setSearch: function setSearch(state, response) {
       state.search = response.data.data;
+    },
+    changePickup: function changePickup(state, pickup) {
+      state.pickup = pickup;
+    },
+    changeDropoff: function changeDropoff(state, dropoff) {
+      state.dropoff = dropoff;
+    }
+  },
+  getters: {
+    pickup: function pickup(state) {
+      return state.pickup;
+    },
+    dropoff: function dropoff(state) {
+      return state.dropoff;
     }
   },
   strict: debug

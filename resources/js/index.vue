@@ -1,7 +1,7 @@
 <template>
     <main>
         <Pickup @closePickup="closePickup($event)" v-if="active == 'pickup'"/>
-        <Dropoff v-else-if="active == 'dropoff'"/>
+        <Dropoff  @closeDropoff="closeDropoff($event)" v-else-if="active == 'dropoff'"/>
         <Home @openDropoff="openDropoff($event)" @openPickup="openPickup($event)" v-else/>
     </main>
 </template>
@@ -29,7 +29,10 @@
         },
         closePickup(value) {
             this.active = 'home'
-        }
+        },
+        closeDropoff(value) {
+            this.active = 'home'
+        },
     },
   }
 </script>

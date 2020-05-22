@@ -10,6 +10,8 @@ import store from './store/index';
 window.Vue = Vue
 Vue.use(VueAxios, axios)
 axios.defaults.baseURL = `${process.env.MIX_APP_URL}/api`
+//create event bus
+export const bus = new Vue();
 // Load Index
 Vue.component('index', Index)
 const app = new Vue({

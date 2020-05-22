@@ -8,7 +8,9 @@ const debug = process.env.NODE_ENV !== 'production';
 export default new Vuex.Store({
   state: {
     markets: [],
-    search: []
+    search: [],
+    pickup: '',
+    dropoff: '',
   },
 
   actions: {
@@ -27,6 +29,18 @@ export default new Vuex.Store({
     setSearch(state, response) {
         state.search = response.data.data;
     },
+    changePickup(state, pickup) {
+        state.pickup = pickup
+    },
+    changeDropoff(state, dropoff) {
+        state.dropoff = dropoff
+    },
   },
+
+  getters: {
+    pickup: state => state.pickup,
+    dropoff: state => state.dropoff,
+  },
+
   strict: debug
 });
