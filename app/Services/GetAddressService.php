@@ -3,12 +3,20 @@
 namespace App\Services;
 
 use App\Models\Address;
-use DB;
 
 class GetAddressService
 {
     public function run($request)
     {
-        DB::transaction(function () use ($request) {});
+
+        $address = $this->filterAddress(['address'], $request->search);
+
+        return $address;
     }
+
+    protected function filterAddress($field, $parameter)
+    {
+        return Address::whereLike($field, $parameter)->orderBy('address', 'asc')->get();
+    }
+
 }

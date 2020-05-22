@@ -23,7 +23,7 @@
             @keydown.up="onArrowUp"
             @keydown.enter="onEnter"
             >
-            {{ result }}
+            {{ result.address }}
             </li>
             </ul>
         </div>
@@ -72,13 +72,22 @@
                 this.isOpen = true;
                 //send request to server
                  api
-                .post("/search", {
+                .post("/search/address", {
                     'search': this.pickup,
                 })
                 .then(res => {
-                    this.results = res.data.data;
-                    console.log('results', this.results);
+                    this.results = res.data.results;
+                    console.log(this.results);
+                    if (this.results.length > 0) {
+                        //display
+                        this.isLoading = false;
+                    }
+                    else {
+                        this.isOpen = false;
+                        //use google auto complete
+                    }
                 }).catch(error => {
+                    //use google auto complete
                     console.log(error.message);
                 });
                 console.log(this.pickup);

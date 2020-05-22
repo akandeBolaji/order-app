@@ -2212,12 +2212,20 @@ __webpack_require__.r(__webpack_exports__);
 
       this.isOpen = true; //send request to server
 
-      api.post("/search", {
+      api.post("/search/address", {
         'search': this.pickup
       }).then(function (res) {
-        _this.results = res.data.data;
-        console.log('results', _this.results);
+        _this.results = res.data.results;
+        console.log(_this.results);
+
+        if (_this.results.length > 0) {
+          //display
+          _this.isLoading = false;
+        } else {
+          _this.isOpen = false; //use google auto complete
+        }
       })["catch"](function (error) {
+        //use google auto complete
         console.log(error.message);
       });
       console.log(this.pickup);
@@ -40817,7 +40825,7 @@ var render = function() {
                       ]
                     }
                   },
-                  [_vm._v("\n        " + _vm._s(result) + "\n        ")]
+                  [_vm._v("\n        " + _vm._s(result.address) + "\n        ")]
                 )
               })
         ],
