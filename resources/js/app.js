@@ -16,6 +16,16 @@ import 'v-autocomplete/dist/v-autocomplete.css'
 window.Vue = Vue
 Vue.use(VueAxios, axios)
 Vue.use(Autocomplete)
+Vue.directive('focus', {
+    inserted: function (el) {
+        el.focus();
+    },
+    update: function (el) {
+        Vue.nextTick(function() {
+              el.focus();
+        })
+    }
+})
 axios.defaults.baseURL = `${process.env.MIX_APP_URL}/api`
 //create event bus
 export const bus = new Vue();
