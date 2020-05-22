@@ -1,26 +1,35 @@
 <template>
-    <div id="main">
-        <header id="header">
-             <h1>
-                <router-link :to="{name: 'home'}">
-                    Mini Market
-                </router-link>
-            </h1>
-            <navigationMenu></navigationMenu>
-        </header>
-        <router-view></router-view>
-    </div>
+    <main>
+        <Pickup @closePickup="closePickup($event)" v-if="active == 'pickup'"/>
+        <Dropoff v-else-if="active == 'dropoff'"/>
+        <Home @openDropoff="openDropoff($event)" @openPickup="openPickup($event)" v-else/>
+    </main>
 </template>
 <script>
-  import navigationMenu from './components/Menu.vue'
+  import Home from './components/Home.vue';
+  import Dropoff from './components/Dropoff.vue';
+  import Pickup from './components/Pickup.vue';
   export default {
     data() {
       return {
-        //
+        active: 'home'
       }
     },
     components: {
-        navigationMenu
-    }
+        Home,
+        Dropoff,
+        Pickup
+    },
+    methods: {
+        openDropoff(value) {
+            this.active = 'dropoff'
+        },
+        openPickup(value) {
+            this.active = 'pickup'
+        },
+        closePickup(value) {
+            this.active = 'home'
+        }
+    },
   }
 </script>
