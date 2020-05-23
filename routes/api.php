@@ -21,7 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 Route::prefix('search')->group(function () {
-    Route::get('save', 'AddressController@saveAddress')->name('address.get');
+    Route::post('save', 'AddressController@saveAddress')->name('address.get');
     Route::post('address', 'AddressController@getAddress')->name('address.search');
 });
 

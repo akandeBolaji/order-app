@@ -7,7 +7,6 @@ const debug = process.env.NODE_ENV !== 'production';
 
 export default new Vuex.Store({
   state: {
-    markets: [],
     search: [],
     pickup: '',
     dropoff: '',
@@ -16,10 +15,20 @@ export default new Vuex.Store({
         long: '',
         address: '',
     },
+    active: 'default',
+    checkout: false,
     pickupLocation: {
         lat: '',
         long: ''
-    }
+    },
+    dropoffLocation: {
+        lat: '',
+        long: ''
+    },
+    icons: {
+        pickup: '/images/pickup.png',
+        dropoff: '/images/dropoff.png'
+    },
   },
 
   actions: {
@@ -54,7 +63,16 @@ export default new Vuex.Store({
         state.pickupLocation = {
             lat: location.lat,
             long: location.long
-        }
+        };
+        state.active = 'pickup';
+    },
+    dropoffLocation(state, location) {
+        state.dropoffLocation = {
+            lat: location.lat,
+            long: location.long
+        };
+        state.active = 'dropoff';
+        state.checkout = true;
     },
   },
 
@@ -63,6 +81,10 @@ export default new Vuex.Store({
     dropoff: state => state.dropoff,
     user: state => state.user,
     pickup_loc: state => state.pickupLocation,
+    dropoff_loc: state => state.dropoffLocation,
+    active: state => state.active,
+    checkout: state => state.checkout,
+    icons: state => state.icons,
   },
 
   strict: debug

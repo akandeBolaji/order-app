@@ -19,7 +19,7 @@
   export default {
     data() {
       return {
-          checkout: false,
+          checkout: this.$store.getters.checkout,
           pickup: this.$store.getters.pickup,
           dropoff: this.$store.getters.dropoff,
       }

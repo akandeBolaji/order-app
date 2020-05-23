@@ -73,6 +73,9 @@
                 this.pickup_lat= result.latitude;
                 this.pickup_long = result.longitude;
                 this.pickup = result.address;
+                this.$emit('closePickup', {
+                    'pickup' : this.pickup
+                });
                 this.updateOnMap();
             },
             onChange() {
@@ -108,6 +111,9 @@
                     this.$refs["pick"], { types: [ 'geocode' ], componentRestrictions: { country: "ng" }, bounds: circle.getBounds(), strictbounds: true });
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
+                        this.$emit('closePickup', {
+                            'pickup' : this.pickup
+                        });
                         console.log('auto', autocomplete);
                         var place = autocomplete.getPlace();
                         this.pickup_lat= place.geometry.location.lat();
@@ -132,10 +138,8 @@
             },
             updateOnMap() {
                 this.$store.commit('pickupLocation', {lat: this.pickup_lat, long: this.pickup_long})
-                this.$emit('closePickup', {
-                    'pickup' : this.pickup
-                });
-                bus.$emit('pickup');
+                this.$store.commit('changePickup', this.pickup)
+
             },
             focusInput() {
                 this.$refs.pick.focus();

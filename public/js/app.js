@@ -1982,12 +1982,44 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       dropoff: this.$store.getters.dropoff,
-      pickup: ''
+      dropoff_lat: '',
+      dropoff_long: '',
+      isLoading: true,
+      pickup: {
+        lat: this.$store.getters.pickup_loc.lat,
+        lng: this.$store.getters.pickup_loc["long"]
+      },
+      results: [],
+      isOpen: false,
+      address: {},
+      arrowCounter: -1
     };
   },
   mounted: function mounted() {
@@ -1995,14 +2027,116 @@ __webpack_require__.r(__webpack_exports__);
     console.log('Component mounted.');
   },
   methods: {
+    onArrowDown: function onArrowDown() {
+      if (this.arrowCounter < this.results.length) {
+        this.arrowCounter = this.arrowCounter + 1;
+      }
+    },
+    onArrowUp: function onArrowUp() {
+      if (this.arrowCounter > 0) {
+        this.arrowCounter = this.arrowCounter - 1;
+      }
+    },
+    onEnter: function onEnter() {
+      this.search = this.results[this.arrowCounter];
+      this.isOpen = false;
+      this.arrowCounter = -1;
+    },
+    setResult: function setResult(result) {
+      this.$emit('closeDropoff', {
+        'dropoff': this.dropoff
+      });
+      this.dropoff_lat = result.latitude;
+      this.dropoff_long = result.longitude;
+      this.dropoff = result.address;
+      this.updateOnMap();
+    },
+    onChange: function onChange() {
+      var _this = this;
+
+      this.isOpen = true; //send request to server
+
+      api.post("/search/address", {
+        'search': this.dropoff
+      }).then(function (res) {
+        console.log(_this.results);
+
+        if (res.data.results.length > 0) {
+          //display
+          _this.results = res.data.results;
+          _this.isLoading = false;
+        } else {
+          //use google auto complete
+          console.log('re', _this.results);
+
+          _this.displayGoogleAutocomplete();
+        }
+      })["catch"](function (error) {
+        //use google auto complete
+        console.log(error.message);
+      });
+      console.log(this.dropoff);
+    },
+    displayGoogleAutocomplete: function displayGoogleAutocomplete() {
+      var _this2 = this;
+
+      //this.isOpen = false;
+      var circle = new google.maps.Circle({
+        center: new google.maps.LatLng("".concat(this.pickup.lat, ", ").concat(this.pickup["long"])),
+        radius: 50000
+      });
+      var autocomplete = new google.maps.places.Autocomplete(this.$refs["drop"], {
+        types: ['geocode'],
+        componentRestrictions: {
+          country: "ng"
+        },
+        bounds: circle.getBounds(),
+        strictbounds: true
+      }); //console.log(this.autocomplete);
+
+      google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        _this2.$emit('closeDropoff', {
+          'dropoff': _this2.dropoff
+        });
+
+        console.log('auto', autocomplete);
+        var place = autocomplete.getPlace();
+        _this2.dropoff_lat = place.geometry.location.lat();
+        _this2.dropoff_long = place.geometry.location.lng();
+        _this2.dropoff = place.formatted_address;
+
+        _this2.updateOnMap();
+
+        _this2.addAddress();
+      });
+    },
+    addAddress: function addAddress() {
+      api.post("/search/save", {
+        address: this.dropoff,
+        latitude: this.dropoff_lat,
+        longitude: this.dropoff_long
+      }).then(function (res) {
+        console.log(res);
+      })["catch"](function (error) {
+        console.log(error.message);
+      });
+    },
+    updateOnMap: function updateOnMap() {
+      this.$store.commit('dropoffLocation', {
+        lat: this.dropoff_lat,
+        "long": this.dropoff_long
+      });
+      this.$store.commit('changeDropoff', this.dropoff);
+    },
     focusInput: function focusInput() {
-      this.$refs.pick.focus();
+      this.$refs.drop.focus();
     },
     goBack: function goBack() {
       this.$emit('closeDropoff', {
-        'pickup': this.pickup
+        'dropoff': this.dropoff
       });
       this.$store.commit('changeDropoff', this.dropoff);
+      _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$emit('dropoff', this.dropoff);
     }
   }
 });
@@ -2040,7 +2174,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      checkout: false,
+      checkout: this.$store.getters.checkout,
       pickup: this.$store.getters.pickup,
       dropoff: this.$store.getters.dropoff
     };
@@ -2077,10 +2211,12 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../app */ "./resources/js/app.js");
+/* harmony import */ var _GmapsCubicBezier__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../GmapsCubicBezier */ "./resources/js/GmapsCubicBezier.js");
 //
 //
 //
 //
+
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -2092,14 +2228,26 @@ __webpack_require__.r(__webpack_exports__);
         lat: this.$store.getters.pickup_loc.lat,
         lng: this.$store.getters.pickup_loc["long"]
       },
+      dropoff: {
+        lat: this.$store.getters.dropoff_loc.lat,
+        lng: this.$store.getters.dropoff_loc["long"]
+      },
+      icons: {
+        pickup: this.$store.getters.icons.pickup,
+        dropoff: this.$store.getters.icons.dropoff
+      },
+      state: this.$store.getters.active,
       key: 'AIzaSyBtUbk85zcb99ugoBfOKbuHbFf8eT3xhf8'
     };
   },
   mounted: function mounted() {
-    this.getUserLocation();
-    _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$on('pickup', function () {
-      updatePickupLocation();
-    });
+    if (this.state == 'default') {
+      this.getUserLocation();
+    } else if (this.state == 'pickup') {
+      this.updatePickupLocation();
+    } else if (this.state == 'dropoff') {
+      this.updateDropoffLocation();
+    }
   },
   methods: {
     getUserLocation: function getUserLocation() {
@@ -2125,18 +2273,63 @@ __webpack_require__.r(__webpack_exports__);
         console.log("Error getting location");
       });
     },
-    updatePickupLocation: function updatePickupLocation() {
+    updateDropoffLocation: function updateDropoffLocation() {
+      console.log('lat', this.pickup.lat, 'lng', this.pickup.lng);
       var map = new google.maps.Map(this.$refs['map'], {
-        zoom: 15,
+        zoom: 14,
         center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        mapTypeControl: false
+        mapTypeId: 'terrain'
+      }); // new GmapsCubicBezier(new google.maps.LatLng(this.pickup.lat, lng), new google.maps.LatLng(lat, lng), map);
+
+      var lat = this.dropoff.lat;
+      var lng = this.dropoff.lng;
+      var marker = new google.maps.Marker({
+        position: new google.maps.LatLng(lat, lng),
+        map: map,
+        icon: this.getIcon(this.icons.dropoff)
+      });
+      var infowindow = new google.maps.InfoWindow();
+      infowindow.setContent("<div class=\"ui header\">Dropoff</div>");
+      infowindow.open(map, marker);
+      var pickup_lat = this.pickup.lat;
+      var pickup_lng = this.pickup.lng;
+      var pickup_marker = new google.maps.Marker({
+        position: new google.maps.LatLng(pickup_lat, pickup_lng),
+        map: map,
+        icon: this.getIcon(this.icons.pickup)
+      });
+      var pickup_infowindow = new google.maps.InfoWindow();
+      pickup_infowindow.setContent("<div class=\"ui header\">Pickup</div>");
+      pickup_infowindow.open(map, pickup_marker);
+      var flightPlanCoordinates = [{
+        lat: this.pickup.lat,
+        lng: this.pickup.lng
+      }, {
+        lat: this.dropoff.lat,
+        lng: this.dropoff.lng
+      }];
+      var flightPath = new google.maps.Polyline({
+        path: flightPlanCoordinates,
+        geodesic: true,
+        strokeColor: '#006400',
+        strokeOpacity: 1.0,
+        strokeWeight: 3
+      });
+      flightPath.setMap(map);
+    },
+    updatePickupLocation: function updatePickupLocation() {
+      console.log('lat', this.pickup.lat, 'lng', this.pickup.lng);
+      var map = new google.maps.Map(this.$refs['map'], {
+        zoom: 14,
+        center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
+        mapTypeId: 'terrain'
       });
       var lat = this.pickup.lat;
       var lng = this.pickup.lng;
       var marker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
-        map: map
+        map: map,
+        icon: this.getIcon(this.icons.pickup)
       });
       var infowindow = new google.maps.InfoWindow();
       infowindow.setContent("<div class=\"ui header\">Pickup</div>");
@@ -2153,20 +2346,33 @@ __webpack_require__.r(__webpack_exports__);
     },
     addDefaultLocation: function addDefaultLocation() {
       var map = new google.maps.Map(this.$refs['map'], {
-        zoom: 15,
+        zoom: 14,
         center: new google.maps.LatLng(this.lat, this.lng),
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        mapTypeControl: false
+        mapTypeId: 'terrain'
       });
       var lat = this.lat;
       var lng = this.lng;
       var marker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
-        map: map
+        map: map,
+        icon: this.getIcon(this.icons.pickup)
       });
       var infowindow = new google.maps.InfoWindow();
       infowindow.setContent("<div class=\"ui header\">Your location</div>");
       infowindow.open(map, marker);
+    },
+    getIcon: function getIcon(image) {
+      var icon = {
+        url: image,
+        // url
+        scaledSize: new google.maps.Size(25, 25),
+        // scaled size
+        origin: new google.maps.Point(0, 0),
+        // origin
+        anchor: new google.maps.Point(0, 0) // anchor
+
+      };
+      return icon;
     }
   }
 });
@@ -2257,6 +2463,9 @@ __webpack_require__.r(__webpack_exports__);
       this.pickup_lat = result.latitude;
       this.pickup_long = result.longitude;
       this.pickup = result.address;
+      this.$emit('closePickup', {
+        'pickup': this.pickup
+      });
       this.updateOnMap();
     },
     onChange: function onChange() {
@@ -2303,6 +2512,10 @@ __webpack_require__.r(__webpack_exports__);
       }); //console.log(this.autocomplete);
 
       google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        _this2.$emit('closePickup', {
+          'pickup': _this2.pickup
+        });
+
         console.log('auto', autocomplete);
         var place = autocomplete.getPlace();
         _this2.pickup_lat = place.geometry.location.lat();
@@ -2330,10 +2543,7 @@ __webpack_require__.r(__webpack_exports__);
         lat: this.pickup_lat,
         "long": this.pickup_long
       });
-      this.$emit('closePickup', {
-        'pickup': this.pickup
-      });
-      _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$emit('pickup');
+      this.$store.commit('changePickup', this.pickup);
     },
     focusInput: function focusInput() {
       this.$refs.pick.focus();
@@ -6793,6 +7003,25 @@ exports = module.exports = __webpack_require__(/*! ../../css-loader/lib/css-base
 
 // module
 exports.push([module.i, ".v-autocomplete{position:relative}.v-autocomplete .v-autocomplete-list{position:absolute}.v-autocomplete .v-autocomplete-list .v-autocomplete-list-item{cursor:pointer}.v-autocomplete .v-autocomplete-list .v-autocomplete-list-item.v-autocomplete-item-active{background-color:#f3f6fa}", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css&":
+/*!*************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css& ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n  width: 100vw;\n}\ninput[data-v-295e7d85] {\n  width: 100vw;\n}\n.autocomplete-results[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -39888,6 +40117,36 @@ try {
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css&":
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css& ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css&");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Home.vue?vue&type=style&index=0&id=f2b6376c&scoped=true&lang=css&":
 /*!**************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Home.vue?vue&type=style&index=0&id=f2b6376c&scoped=true&lang=css& ***!
@@ -40641,10 +40900,10 @@ render._withStripped = true
 
 /***/ }),
 
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&":
-/*!**********************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85& ***!
-  \**********************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&scoped=true&":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&scoped=true& ***!
+  \**********************************************************************************************************************************************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -40656,34 +40915,115 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "form card" }, [
+  return _c("div", { staticClass: "card" }, [
     _c("header", { attrs: { id: "header" } }, [
       _c("span", { on: { click: _vm.goBack } }, [_vm._v(" Back")]),
       _vm._v(" "),
       _c("span", { staticClass: "text-center" }, [_vm._v("  Dropoff Address")])
     ]),
     _vm._v(" "),
-    _c("input", {
-      directives: [
-        {
-          name: "model",
-          rawName: "v-model",
-          value: _vm.dropoff,
-          expression: "dropoff"
-        }
-      ],
-      ref: "pick",
-      attrs: { type: "text" },
-      domProps: { value: _vm.dropoff },
-      on: {
-        input: function($event) {
-          if ($event.target.composing) {
-            return
+    _c("div", { staticClass: "autocomplete" }, [
+      _c("input", {
+        directives: [
+          {
+            name: "model",
+            rawName: "v-model",
+            value: _vm.dropoff,
+            expression: "dropoff"
           }
-          _vm.dropoff = $event.target.value
+        ],
+        ref: "drop",
+        staticClass: "input",
+        attrs: { type: "text" },
+        domProps: { value: _vm.dropoff },
+        on: {
+          input: [
+            function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.dropoff = $event.target.value
+            },
+            _vm.onChange
+          ]
         }
-      }
-    })
+      }),
+      _vm._v(" "),
+      _vm.isOpen
+        ? _c(
+            "ul",
+            { staticClass: "autocomplete-results" },
+            [
+              _vm.isLoading
+                ? _c("li", { staticClass: "loading" }, [
+                    _vm._v("\n        Loading results...\n        ")
+                  ])
+                : _vm._l(_vm.results, function(result, i) {
+                    return _c(
+                      "li",
+                      {
+                        key: i,
+                        staticClass: "autocomplete-result",
+                        class: { "is-active": i === _vm.arrowCounter },
+                        on: {
+                          click: function($event) {
+                            return _vm.setResult(result)
+                          },
+                          keydown: [
+                            function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k($event.keyCode, "down", 40, $event.key, [
+                                  "Down",
+                                  "ArrowDown"
+                                ])
+                              ) {
+                                return null
+                              }
+                              return _vm.onArrowDown($event)
+                            },
+                            function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k($event.keyCode, "up", 38, $event.key, [
+                                  "Up",
+                                  "ArrowUp"
+                                ])
+                              ) {
+                                return null
+                              }
+                              return _vm.onArrowUp($event)
+                            },
+                            function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k(
+                                  $event.keyCode,
+                                  "enter",
+                                  13,
+                                  $event.key,
+                                  "Enter"
+                                )
+                              ) {
+                                return null
+                              }
+                              return _vm.onEnter($event)
+                            }
+                          ]
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n        " + _vm._s(result.address) + "\n        "
+                        )
+                      ]
+                    )
+                  })
+            ],
+            2
+          )
+        : _vm._e()
+    ])
   ])
 }
 var staticRenderFns = []
@@ -54217,6 +54557,148 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./resources/js/GmapsCubicBezier.js":
+/*!******************************************!*\
+  !*** ./resources/js/GmapsCubicBezier.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var map;
+var curvature = 0.5; // how curvy to make the arc
+
+function init(lat1, lng1, lat2, lng2, ref) {
+  var Map = google.maps.Map,
+      LatLng = google.maps.LatLng,
+      LatLngBounds = google.maps.LatLngBounds,
+      Marker = google.maps.Marker,
+      Point = google.maps.Point; // This is the initial location of the points
+  // (you can drag the markers around after the map loads)
+
+  var pos1 = new LatLng(lat1, lng1);
+  var pos2 = new LatLng(lat2, lng2);
+  var bounds = new LatLngBounds();
+  bounds.extend(pos1);
+  bounds.extend(pos2);
+  map = new Map(ref, {
+    center: bounds.getCenter(),
+    zoom: 12
+  });
+  map.fitBounds(bounds);
+  var markerP1 = new Marker({
+    position: pos1,
+    label: "1",
+    draggable: false,
+    map: map
+  });
+  var markerP2 = new Marker({
+    position: pos2,
+    label: "2",
+    draggable: false,
+    map: map
+  });
+  drawCurve(pos2, pos1, map);
+}
+
+function drawCurve(P1, P2, map) {
+  var lineLength = google.maps.geometry.spherical.computeDistanceBetween(P1, P2);
+  var lineHeading = google.maps.geometry.spherical.computeHeading(P1, P2);
+  var lineHeading1, lineHeading2;
+
+  if (lineHeading < 0) {
+    lineHeading1 = lineHeading + 45;
+    lineHeading2 = lineHeading + 135;
+  } else {
+    lineHeading1 = lineHeading + -45;
+    lineHeading2 = lineHeading + -135;
+  }
+
+  var pA = google.maps.geometry.spherical.computeOffset(P1, lineLength / 2.2, lineHeading1);
+  var pB = google.maps.geometry.spherical.computeOffset(P2, lineLength / 2.2, lineHeading2);
+  var curvedLine = new GmapsCubicBezier(P1, pA, pB, P2, 0.01, map);
+} // google.maps.event.addDomListener(window, 'load', initialize);
+// original Belzier Curve code from nicoabie's answer to this question on StackOverflow:
+// http://stackoverflow.com/questions/5347984/letting-users-draw-curved-lines-on-a-google-map
+
+
+var GmapsCubicBezier = function GmapsCubicBezier(latlong1, latlong2, latlong3, latlong4, resolution, map) {
+  var lat1 = latlong1.lat();
+  var long1 = latlong1.lng();
+  var lat2 = latlong2.lat();
+  var long2 = latlong2.lng();
+  var lat3 = latlong3.lat();
+  var long3 = latlong3.lng();
+  var lat4 = latlong4.lat();
+  var long4 = latlong4.lng();
+  var points = [];
+
+  for (it = 0; it <= 1; it += resolution) {
+    points.push(this.getBezier({
+      x: lat1,
+      y: long1
+    }, {
+      x: lat2,
+      y: long2
+    }, {
+      x: lat3,
+      y: long3
+    }, {
+      x: lat4,
+      y: long4
+    }, it));
+  }
+
+  var path = [];
+
+  for (var i = 0; i < points.length - 1; i++) {
+    path.push(new google.maps.LatLng(points[i].x, points[i].y));
+    path.push(new google.maps.LatLng(points[i + 1].x, points[i + 1].y, false));
+  }
+
+  var Line = new google.maps.Polyline({
+    path: path,
+    geodesic: true,
+    strokeColor: "##35495e",
+    strokeOpacity: 0.8,
+    strokeWeight: 3,
+    icons: [{
+      icon: {
+        path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+        scale: 5
+      },
+      offset: '100%'
+    }]
+  });
+  Line.setMap(map);
+  return Line;
+};
+
+GmapsCubicBezier.prototype = {
+  B1: function B1(t) {
+    return t * t * t;
+  },
+  B2: function B2(t) {
+    return 3 * t * t * (1 - t);
+  },
+  B3: function B3(t) {
+    return 3 * t * (1 - t) * (1 - t);
+  },
+  B4: function B4(t) {
+    return (1 - t) * (1 - t) * (1 - t);
+  },
+  getBezier: function getBezier(C1, C2, C3, C4, percent) {
+    var pos = {};
+    pos.x = C1.x * this.B1(percent) + C2.x * this.B2(percent) + C3.x * this.B3(percent) + C4.x * this.B4(percent);
+    pos.y = C1.y * this.B1(percent) + C2.y * this.B2(percent) + C3.y * this.B3(percent) + C4.y * this.B4(percent);
+    return pos;
+  }
+};
+/* harmony default export */ __webpack_exports__["default"] = (init);
+
+/***/ }),
+
 /***/ "./resources/js/Index.vue":
 /*!********************************!*\
   !*** ./resources/js/Index.vue ***!
@@ -54405,9 +54887,11 @@ window.keys = process.env.GOOGLE_API_KEY; //window.axios.defaults.headers.common
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Dropoff_vue_vue_type_template_id_295e7d85___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Dropoff.vue?vue&type=template&id=295e7d85& */ "./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&");
+/* harmony import */ var _Dropoff_vue_vue_type_template_id_295e7d85_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Dropoff.vue?vue&type=template&id=295e7d85&scoped=true& */ "./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&scoped=true&");
 /* harmony import */ var _Dropoff_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Dropoff.vue?vue&type=script&lang=js& */ "./resources/js/components/Dropoff.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* empty/unused harmony star reexport *//* harmony import */ var _Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css& */ "./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
 
 
 
@@ -54415,13 +54899,13 @@ __webpack_require__.r(__webpack_exports__);
 
 /* normalize component */
 
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
   _Dropoff_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _Dropoff_vue_vue_type_template_id_295e7d85___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _Dropoff_vue_vue_type_template_id_295e7d85___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  _Dropoff_vue_vue_type_template_id_295e7d85_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _Dropoff_vue_vue_type_template_id_295e7d85_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
   null,
-  null,
+  "295e7d85",
   null
   
 )
@@ -54447,19 +54931,35 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&":
-/*!****************************************************************************!*\
-  !*** ./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85& ***!
-  \****************************************************************************/
+/***/ "./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css&":
+/*!******************************************************************************************************!*\
+  !*** ./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css& ***!
+  \******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/style-loader!../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css& */ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=style&index=0&id=295e7d85&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_style_index_0_id_295e7d85_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+/***/ }),
+
+/***/ "./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&scoped=true&":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&scoped=true& ***!
+  \****************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_template_id_295e7d85___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./Dropoff.vue?vue&type=template&id=295e7d85& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_template_id_295e7d85___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_template_id_295e7d85_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./Dropoff.vue?vue&type=template&id=295e7d85&scoped=true& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Dropoff.vue?vue&type=template&id=295e7d85&scoped=true&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_template_id_295e7d85_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_template_id_295e7d85___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Dropoff_vue_vue_type_template_id_295e7d85_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 
@@ -54734,7 +55234,6 @@ vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_2__
 var debug = "development" !== 'production';
 /* harmony default export */ __webpack_exports__["default"] = (new vuex__WEBPACK_IMPORTED_MODULE_2__["default"].Store({
   state: {
-    markets: [],
     search: [],
     pickup: '',
     dropoff: '',
@@ -54743,9 +55242,19 @@ var debug = "development" !== 'production';
       "long": '',
       address: ''
     },
+    active: 'default',
+    checkout: false,
     pickupLocation: {
       lat: '',
       "long": ''
+    },
+    dropoffLocation: {
+      lat: '',
+      "long": ''
+    },
+    icons: {
+      pickup: '/images/pickup.png',
+      dropoff: '/images/dropoff.png'
     }
   },
   actions: {
@@ -54822,6 +55331,15 @@ var debug = "development" !== 'production';
         lat: location.lat,
         "long": location["long"]
       };
+      state.active = 'pickup';
+    },
+    dropoffLocation: function dropoffLocation(state, location) {
+      state.dropoffLocation = {
+        lat: location.lat,
+        "long": location["long"]
+      };
+      state.active = 'dropoff';
+      state.checkout = true;
     }
   },
   getters: {
@@ -54836,6 +55354,18 @@ var debug = "development" !== 'production';
     },
     pickup_loc: function pickup_loc(state) {
       return state.pickupLocation;
+    },
+    dropoff_loc: function dropoff_loc(state) {
+      return state.dropoffLocation;
+    },
+    active: function active(state) {
+      return state.active;
+    },
+    checkout: function checkout(state) {
+      return state.checkout;
+    },
+    icons: function icons(state) {
+      return state.icons;
     }
   },
   strict: debug
