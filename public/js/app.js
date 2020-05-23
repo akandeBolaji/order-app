@@ -2076,23 +2076,30 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../app */ "./resources/js/app.js");
 //
 //
 //
 //
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       lat: 0,
       lng: 0,
+      address: '',
       pickup: {
         lat: this.$store.getters.pickup_loc.lat,
         lng: this.$store.getters.pickup_loc["long"]
-      }
+      },
+      key: 'AIzaSyBtUbk85zcb99ugoBfOKbuHbFf8eT3xhf8'
     };
   },
   mounted: function mounted() {
     this.getUserLocation();
+    _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$on('pickup', function () {
+      updatePickupLocation();
+    });
   },
   methods: {
     getUserLocation: function getUserLocation() {
@@ -2105,14 +2112,43 @@ __webpack_require__.r(__webpack_exports__);
 
         _this.addDefaultLocation();
 
+        _this.getUserAddress();
+
         _this.$store.commit('storeUserLocation', {
           'lat': _this.lat,
-          'long': _this.lng
+          'long': _this.lng,
+          'address': _this.address
         });
 
         console.log('hi', _this.lng, _this.lat);
       }, function (error) {
         console.log("Error getting location");
+      });
+    },
+    updatePickupLocation: function updatePickupLocation() {
+      var map = new google.maps.Map(this.$refs['map'], {
+        zoom: 15,
+        center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: false
+      });
+      var lat = this.pickup.lat;
+      var lng = this.pickup.lng;
+      var marker = new google.maps.Marker({
+        position: new google.maps.LatLng(lat, lng),
+        map: map
+      });
+      var infowindow = new google.maps.InfoWindow();
+      infowindow.setContent("<div class=\"ui header\">Pickup</div>");
+      infowindow.open(map, marker);
+    },
+    getUserAddress: function getUserAddress() {
+      var _this2 = this;
+
+      api.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=".concat(this.lat, ",").concat(this.lng, "&key=").concat(this.key)).then(function (res) {
+        console.log('address', res);
+        _this2.address = res.data.results[0].formatted_address;
+      })["catch"](function (error) {//console.log(error.message);
       });
     },
     addDefaultLocation: function addDefaultLocation() {
@@ -2231,15 +2267,17 @@ __webpack_require__.r(__webpack_exports__);
       api.post("/search/address", {
         'search': this.pickup
       }).then(function (res) {
-        _this.results = res.data.results;
         console.log(_this.results);
 
-        if (_this.results.length > 0) {
+        if (res.data.results.length > 0) {
           //display
+          _this.results = res.data.results;
           _this.isLoading = false;
         } else {
-          _this.displayGoogleAutocomplete(); //use google auto complete
+          //use google auto complete
+          console.log('re', _this.results);
 
+          _this.displayGoogleAutocomplete();
         }
       })["catch"](function (error) {
         //use google auto complete
@@ -2250,7 +2288,7 @@ __webpack_require__.r(__webpack_exports__);
     displayGoogleAutocomplete: function displayGoogleAutocomplete() {
       var _this2 = this;
 
-      this.isOpen = false;
+      //this.isOpen = false;
       var circle = new google.maps.Circle({
         center: new google.maps.LatLng("".concat(this.user.lat, ", ").concat(this.user["long"])),
         radius: 50000
@@ -2295,7 +2333,7 @@ __webpack_require__.r(__webpack_exports__);
       this.$emit('closePickup', {
         'pickup': this.pickup
       });
-      _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$emit('pickup', this.pickup);
+      _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$emit('pickup');
     },
     focusInput: function focusInput() {
       this.$refs.pick.focus();
@@ -54339,8 +54377,8 @@ try {
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.api = window.axios;
-window.key = process.env.GOOGLE_API_KEY;
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.keys = process.env.GOOGLE_API_KEY; //window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
@@ -54702,7 +54740,8 @@ var debug = "development" !== 'production';
     dropoff: '',
     user: {
       lat: '',
-      "long": ''
+      "long": '',
+      address: ''
     },
     pickupLocation: {
       lat: '',

@@ -13,7 +13,8 @@ export default new Vuex.Store({
     dropoff: '',
     user: {
         lat: '',
-        long: ''
+        long: '',
+        address: '',
     },
     pickupLocation: {
         lat: '',

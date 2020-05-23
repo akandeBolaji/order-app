@@ -83,15 +83,16 @@
                     'search': this.pickup,
                 })
                 .then(res => {
-                    this.results = res.data.results;
                     console.log(this.results);
-                    if (this.results.length > 0) {
+                    if (res.data.results.length > 0) {
                         //display
+                        this.results = res.data.results;
                         this.isLoading = false;
                     }
                     else {
+                         //use google auto complete
+                         console.log('re', this.results);
                         this.displayGoogleAutocomplete();
-                        //use google auto complete
                     }
                 }).catch(error => {
                     //use google auto complete
@@ -100,7 +101,7 @@
                 console.log(this.pickup);
             },
             displayGoogleAutocomplete() {
-                this.isOpen = false;
+                //this.isOpen = false;
                     var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
 
                     var autocomplete = new google.maps.places.Autocomplete(
@@ -134,7 +135,7 @@
                 this.$emit('closePickup', {
                     'pickup' : this.pickup
                 });
-                bus.$emit('pickup', this.pickup);
+                bus.$emit('pickup');
             },
             focusInput() {
                 this.$refs.pick.focus();
