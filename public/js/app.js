@@ -2260,6 +2260,7 @@ __webpack_require__.r(__webpack_exports__);
 
       google.maps.event.addListener(autocomplete, 'place_changed', function () {
         console.log('auto', autocomplete);
+        var place = autocomplete.getPlace();
         _this2.pickup_lat = place.geometry.location.lat();
         _this2.pickup_long = place.geometry.location.lng();
         _this2.pickup = place.formatted_address;

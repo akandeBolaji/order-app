@@ -13,7 +13,7 @@ class CreateAddressRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class CreateAddressRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'address' => 'required',
+            'latitude' => 'required',
+            'longitude' => 'required'
         ];
     }
 }

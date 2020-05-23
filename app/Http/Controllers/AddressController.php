@@ -16,8 +16,9 @@ class AddressController extends Controller
         return response()->json(['error' => false, 'results' => $results]);
     }
 
-    public function saveAddress()
+    public function saveAddress(CreateAddressRequest $request)
     {
-
+        $save = (new CreateAddressService())->run($request);
+        return response()->json(200);
     }
 }

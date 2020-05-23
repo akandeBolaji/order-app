@@ -106,6 +106,7 @@
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
                         console.log('auto', autocomplete);
+                        var place = autocomplete.getPlace();
                         this.pickup_lat= place.geometry.location.lat();
                         this.pickup_long = place.geometry.location.lng();
                         this.pickup = place.formatted_address;
