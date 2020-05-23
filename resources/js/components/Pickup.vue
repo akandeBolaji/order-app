@@ -6,7 +6,7 @@
         </header>
         <div class="autocomplete">
             <input type="text" v-model="pickup" @input="onChange" class="input" ref="pick">
-            <ul v-show="isOpen" class="autocomplete-results">
+            <ul v-if="isOpen" class="autocomplete-results">
             <li
             class="loading"
             v-if="isLoading">
@@ -36,12 +36,17 @@
          data() {
             return {
                 pickup: this.$store.getters.pickup,
-                dropoff: '',
+                pickup_lat: '',
+                pickup_long: '',
                 isLoading: true,
                 results: [],
                 isOpen: false,
-                address: '',
+                address: {},
                 arrowCounter: -1,
+                user: {
+                    lat: this.$store.getters.user.lat,
+                    long: this.$store.getters.user.long,
+                },
             }
         },
         mounted() {
@@ -65,8 +70,8 @@
                 this.arrowCounter = -1;
             },
             setResult(result) {
-                this.search = result;
-                this.isOpen = false;
+                this.search = result.address;
+                this.address = result;
             },
             onChange() {
                 this.isOpen = true;
@@ -83,7 +88,7 @@
                         this.isLoading = false;
                     }
                     else {
-                        this.isOpen = false;
+                        this.displayGoogleAutocomplete();
                         //use google auto complete
                     }
                 }).catch(error => {
@@ -91,6 +96,38 @@
                     console.log(error.message);
                 });
                 console.log(this.pickup);
+            },
+            displayGoogleAutocomplete() {
+                this.isOpen = false;
+                    var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
+
+                    var autocomplete = new google.maps.places.Autocomplete(
+                    this.$refs["pick"], { types: [ 'geocode' ], componentRestrictions: { country: "ng" }, bounds: circle.getBounds(), strictbounds: true });
+                    //console.log(this.autocomplete);
+                    google.maps.event.addListener(autocomplete, 'place_changed', () => {
+                        console.log('auto', autocomplete);
+                        this.pickup_lat= place.geometry.location.lat();
+                        this.pickup_long = place.geometry.location.lng();
+                        this.pickup = place.formatted_address;
+                        this.addAddress();
+                        this.updateOnMap();
+                })
+            },
+            addAddress() {
+                api
+                .post("/search/save", {
+                    address: this.pickup,
+                    latitude: this.pickup_lat,
+                    longitude: this.pickup_long
+                })
+                .then(res => {
+                    console.log(res.data);
+                }).catch(error => {
+                    console.log(error.message);
+                });
+            },
+            updateOnMap() {
+
             },
             focusInput() {
                 this.$refs.pick.focus();
@@ -134,5 +171,6 @@
     background-color: #4AAE9B;
     color: white;
   }
+
 </style>
 

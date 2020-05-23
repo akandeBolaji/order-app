@@ -11,6 +11,10 @@ export default new Vuex.Store({
     search: [],
     pickup: '',
     dropoff: '',
+    user: {
+        lat: '',
+        long: ''
+    }
   },
 
   actions: {
@@ -35,11 +39,18 @@ export default new Vuex.Store({
     changeDropoff(state, dropoff) {
         state.dropoff = dropoff
     },
+    storeUserLocation(state, location) {
+        state.user = {
+            lat: location.lat,
+            long: location.long
+        }
+    },
   },
 
   getters: {
     pickup: state => state.pickup,
     dropoff: state => state.dropoff,
+    user: state => state.user,
   },
 
   strict: debug

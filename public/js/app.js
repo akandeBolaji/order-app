@@ -2101,6 +2101,11 @@ __webpack_require__.r(__webpack_exports__);
 
         _this.addDefaultLocation();
 
+        _this.$store.commit('storeUserLocation', {
+          'lat': _this.lat,
+          'long': _this.lng
+        });
+
         console.log('hi', _this.lng, _this.lat);
       }, function (error) {
         console.log("Error getting location");
@@ -2175,12 +2180,17 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       pickup: this.$store.getters.pickup,
-      dropoff: '',
+      pickup_lat: '',
+      pickup_long: '',
       isLoading: true,
       results: [],
       isOpen: false,
-      address: '',
-      arrowCounter: -1
+      address: {},
+      arrowCounter: -1,
+      user: {
+        lat: this.$store.getters.user.lat,
+        "long": this.$store.getters.user["long"]
+      }
     };
   },
   mounted: function mounted() {
@@ -2204,8 +2214,8 @@ __webpack_require__.r(__webpack_exports__);
       this.arrowCounter = -1;
     },
     setResult: function setResult(result) {
-      this.search = result;
-      this.isOpen = false;
+      this.search = result.address;
+      this.address = result;
     },
     onChange: function onChange() {
       var _this = this;
@@ -2222,7 +2232,8 @@ __webpack_require__.r(__webpack_exports__);
           //display
           _this.isLoading = false;
         } else {
-          _this.isOpen = false; //use google auto complete
+          _this.displayGoogleAutocomplete(); //use google auto complete
+
         }
       })["catch"](function (error) {
         //use google auto complete
@@ -2230,6 +2241,46 @@ __webpack_require__.r(__webpack_exports__);
       });
       console.log(this.pickup);
     },
+    displayGoogleAutocomplete: function displayGoogleAutocomplete() {
+      var _this2 = this;
+
+      this.isOpen = false;
+      var circle = new google.maps.Circle({
+        center: new google.maps.LatLng("".concat(this.user.lat, ", ").concat(this.user["long"])),
+        radius: 50000
+      });
+      var autocomplete = new google.maps.places.Autocomplete(this.$refs["pick"], {
+        types: ['geocode'],
+        componentRestrictions: {
+          country: "ng"
+        },
+        bounds: circle.getBounds(),
+        strictbounds: true
+      }); //console.log(this.autocomplete);
+
+      google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        console.log('auto', autocomplete);
+        _this2.pickup_lat = place.geometry.location.lat();
+        _this2.pickup_long = place.geometry.location.lng();
+        _this2.pickup = place.formatted_address;
+
+        _this2.addAddress();
+
+        _this2.updateOnMap();
+      });
+    },
+    addAddress: function addAddress() {
+      api.post("/search/save", {
+        address: this.pickup,
+        latitude: this.pickup_lat,
+        longitude: this.pickup_long
+      }).then(function (res) {
+        console.log(res.data);
+      })["catch"](function (error) {
+        console.log(error.message);
+      });
+    },
+    updateOnMap: function updateOnMap() {},
     focusInput: function focusInput() {
       this.$refs.pick.focus();
     },
@@ -6725,7 +6776,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete[data-v-40fb1aa7] {\n  position: relative;\n  width: 100vw;\n}\ninput[data-v-40fb1aa7] {\n  width: 100vw;\n}\n.autocomplete-results[data-v-40fb1aa7] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-40fb1aa7] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-40fb1aa7]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n", ""]);
+exports.push([module.i, "\n.autocomplete[data-v-40fb1aa7] {\n  position: relative;\n  width: 100vw;\n}\ninput[data-v-40fb1aa7] {\n  width: 100vw;\n}\n.autocomplete-results[data-v-40fb1aa7] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-40fb1aa7] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-40fb1aa7]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -40753,84 +40804,80 @@ var render = function() {
         }
       }),
       _vm._v(" "),
-      _c(
-        "ul",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.isOpen,
-              expression: "isOpen"
-            }
-          ],
-          staticClass: "autocomplete-results"
-        },
-        [
-          _vm.isLoading
-            ? _c("li", { staticClass: "loading" }, [
-                _vm._v("\n        Loading results...\n        ")
-              ])
-            : _vm._l(_vm.results, function(result, i) {
-                return _c(
-                  "li",
-                  {
-                    key: i,
-                    staticClass: "autocomplete-result",
-                    class: { "is-active": i === _vm.arrowCounter },
-                    on: {
-                      click: function($event) {
-                        return _vm.setResult(result)
-                      },
-                      keydown: [
-                        function($event) {
-                          if (
-                            !$event.type.indexOf("key") &&
-                            _vm._k($event.keyCode, "down", 40, $event.key, [
-                              "Down",
-                              "ArrowDown"
-                            ])
-                          ) {
-                            return null
-                          }
-                          return _vm.onArrowDown($event)
-                        },
-                        function($event) {
-                          if (
-                            !$event.type.indexOf("key") &&
-                            _vm._k($event.keyCode, "up", 38, $event.key, [
-                              "Up",
-                              "ArrowUp"
-                            ])
-                          ) {
-                            return null
-                          }
-                          return _vm.onArrowUp($event)
-                        },
-                        function($event) {
-                          if (
-                            !$event.type.indexOf("key") &&
-                            _vm._k(
-                              $event.keyCode,
-                              "enter",
-                              13,
-                              $event.key,
-                              "Enter"
-                            )
-                          ) {
-                            return null
-                          }
-                          return _vm.onEnter($event)
+      _vm.isOpen
+        ? _c(
+            "ul",
+            { staticClass: "autocomplete-results" },
+            [
+              _vm.isLoading
+                ? _c("li", { staticClass: "loading" }, [
+                    _vm._v("\n        Loading results...\n        ")
+                  ])
+                : _vm._l(_vm.results, function(result, i) {
+                    return _c(
+                      "li",
+                      {
+                        key: i,
+                        staticClass: "autocomplete-result",
+                        class: { "is-active": i === _vm.arrowCounter },
+                        on: {
+                          click: function($event) {
+                            return _vm.setResult(result)
+                          },
+                          keydown: [
+                            function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k($event.keyCode, "down", 40, $event.key, [
+                                  "Down",
+                                  "ArrowDown"
+                                ])
+                              ) {
+                                return null
+                              }
+                              return _vm.onArrowDown($event)
+                            },
+                            function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k($event.keyCode, "up", 38, $event.key, [
+                                  "Up",
+                                  "ArrowUp"
+                                ])
+                              ) {
+                                return null
+                              }
+                              return _vm.onArrowUp($event)
+                            },
+                            function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k(
+                                  $event.keyCode,
+                                  "enter",
+                                  13,
+                                  $event.key,
+                                  "Enter"
+                                )
+                              ) {
+                                return null
+                              }
+                              return _vm.onEnter($event)
+                            }
+                          ]
                         }
+                      },
+                      [
+                        _vm._v(
+                          "\n        " + _vm._s(result.address) + "\n        "
+                        )
                       ]
-                    }
-                  },
-                  [_vm._v("\n        " + _vm._s(result.address) + "\n        ")]
-                )
-              })
-        ],
-        2
-      )
+                    )
+                  })
+            ],
+            2
+          )
+        : _vm._e()
     ])
   ])
 }
@@ -54636,7 +54683,11 @@ var debug = "development" !== 'production';
     markets: [],
     search: [],
     pickup: '',
-    dropoff: ''
+    dropoff: '',
+    user: {
+      lat: '',
+      "long": ''
+    }
   },
   actions: {
     getAllMarkets: function getAllMarkets(_ref) {
@@ -54700,6 +54751,12 @@ var debug = "development" !== 'production';
     },
     changeDropoff: function changeDropoff(state, dropoff) {
       state.dropoff = dropoff;
+    },
+    storeUserLocation: function storeUserLocation(state, location) {
+      state.user = {
+        lat: location.lat,
+        "long": location["long"]
+      };
     }
   },
   getters: {
@@ -54708,6 +54765,9 @@ var debug = "development" !== 'production';
     },
     dropoff: function dropoff(state) {
       return state.dropoff;
+    },
+    user: function user(state) {
+      return state.user;
     }
   },
   strict: debug

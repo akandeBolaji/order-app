@@ -20,7 +20,8 @@ export default {
             position => {
                 this.lat = position.coords.latitude;
                 this.lng = position.coords.longitude;
-                this.addDefaultLocation()
+                this.addDefaultLocation();
+                this.$store.commit('storeUserLocation', {'lat' : this.lat, 'long' : this.lng});
                 console.log('hi',this.lng, this.lat);
             },
             error => {
