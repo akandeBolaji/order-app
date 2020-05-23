@@ -2083,8 +2083,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      lag: 0,
-      lng: 0
+      lat: 0,
+      lng: 0,
+      pickup: {
+        lat: this.$store.getters.pickup_loc.lat,
+        lng: this.$store.getters.pickup_loc["long"]
+      }
     };
   },
   mounted: function mounted() {
@@ -2214,8 +2218,10 @@ __webpack_require__.r(__webpack_exports__);
       this.arrowCounter = -1;
     },
     setResult: function setResult(result) {
-      this.search = result.address;
-      this.address = result;
+      this.pickup_lat = result.latitude;
+      this.pickup_long = result.longitude;
+      this.pickup = result.address;
+      this.updateOnMap();
     },
     onChange: function onChange() {
       var _this = this;
@@ -2265,9 +2271,9 @@ __webpack_require__.r(__webpack_exports__);
         _this2.pickup_long = place.geometry.location.lng();
         _this2.pickup = place.formatted_address;
 
-        _this2.addAddress();
-
         _this2.updateOnMap();
+
+        _this2.addAddress();
       });
     },
     addAddress: function addAddress() {
@@ -2276,12 +2282,21 @@ __webpack_require__.r(__webpack_exports__);
         latitude: this.pickup_lat,
         longitude: this.pickup_long
       }).then(function (res) {
-        console.log(res.data);
+        console.log(res);
       })["catch"](function (error) {
         console.log(error.message);
       });
     },
-    updateOnMap: function updateOnMap() {},
+    updateOnMap: function updateOnMap() {
+      this.$store.commit('pickupLocation', {
+        lat: this.pickup_lat,
+        "long": this.pickup_long
+      });
+      this.$emit('closePickup', {
+        'pickup': this.pickup
+      });
+      _app__WEBPACK_IMPORTED_MODULE_0__["bus"].$emit('pickup', this.pickup);
+    },
     focusInput: function focusInput() {
       this.$refs.pick.focus();
     },
@@ -54688,6 +54703,10 @@ var debug = "development" !== 'production';
     user: {
       lat: '',
       "long": ''
+    },
+    pickupLocation: {
+      lat: '',
+      "long": ''
     }
   },
   actions: {
@@ -54758,6 +54777,12 @@ var debug = "development" !== 'production';
         lat: location.lat,
         "long": location["long"]
       };
+    },
+    pickupLocation: function pickupLocation(state, location) {
+      state.pickupLocation = {
+        lat: location.lat,
+        "long": location["long"]
+      };
     }
   },
   getters: {
@@ -54769,6 +54794,9 @@ var debug = "development" !== 'production';
     },
     user: function user(state) {
       return state.user;
+    },
+    pickup_loc: function pickup_loc(state) {
+      return state.pickupLocation;
     }
   },
   strict: debug

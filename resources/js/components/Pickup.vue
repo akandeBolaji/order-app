@@ -70,8 +70,10 @@
                 this.arrowCounter = -1;
             },
             setResult(result) {
-                this.search = result.address;
-                this.address = result;
+                this.pickup_lat= result.latitude;
+                this.pickup_long = result.longitude;
+                this.pickup = result.address;
+                this.updateOnMap();
             },
             onChange() {
                 this.isOpen = true;
@@ -110,8 +112,8 @@
                         this.pickup_lat= place.geometry.location.lat();
                         this.pickup_long = place.geometry.location.lng();
                         this.pickup = place.formatted_address;
-                        this.addAddress();
                         this.updateOnMap();
+                        this.addAddress();
                 })
             },
             addAddress() {
@@ -122,13 +124,17 @@
                     longitude: this.pickup_long
                 })
                 .then(res => {
-                    console.log(res.data);
+                    console.log(res);
                 }).catch(error => {
                     console.log(error.message);
                 });
             },
             updateOnMap() {
-
+                this.$store.commit('pickupLocation', {lat: this.pickup_lat, long: this.pickup_long})
+                this.$emit('closePickup', {
+                    'pickup' : this.pickup
+                });
+                bus.$emit('pickup', this.pickup);
             },
             focusInput() {
                 this.$refs.pick.focus();

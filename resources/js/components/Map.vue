@@ -6,8 +6,12 @@
 export default {
     data() {
       return {
-          lag : 0,
+          lat : 0,
           lng : 0,
+          pickup: {
+              lat: this.$store.getters.pickup_loc.lat,
+              lng: this.$store.getters.pickup_loc.long,
+          }
       }
     },
     mounted() {

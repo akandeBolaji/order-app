@@ -14,6 +14,10 @@ export default new Vuex.Store({
     user: {
         lat: '',
         long: ''
+    },
+    pickupLocation: {
+        lat: '',
+        long: ''
     }
   },
 
@@ -45,12 +49,19 @@ export default new Vuex.Store({
             long: location.long
         }
     },
+    pickupLocation(state, location) {
+        state.pickupLocation = {
+            lat: location.lat,
+            long: location.long
+        }
+    },
   },
 
   getters: {
     pickup: state => state.pickup,
     dropoff: state => state.dropoff,
     user: state => state.user,
+    pickup_loc: state => state.pickupLocation,
   },
 
   strict: debug
