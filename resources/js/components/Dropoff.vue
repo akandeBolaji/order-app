@@ -1,11 +1,16 @@
 <template>
-    <div class="card">
-
-        <header id="header">
-             <span @click="goBack"> Back</span> <span class="text-center">  Dropoff Address</span>
-        </header>
-        <div class="autocomplete">
-            <input type="text" v-model="dropoff" @input="onChange" class="input" ref="drop">
+    <div>
+        <h3 class="my-2 d-flex justify-content-between">
+             <div @click="goBack"><i class="fa fa-chevron-left"></i>Back</div>
+             <div>Dropoff</div>
+             <div></div>
+        </h3>
+        <div class="autocomplete mx-2">
+             <form>
+                <div class="form-group">
+                    <input type="text" v-model="dropoff" ref="drop"  @input="onChange" class="form-control bg-light" placeholder="Dropoff Address">
+                </div>
+            </form>
             <ul v-if="isOpen" class="autocomplete-results">
             <li
             class="loading"
@@ -23,7 +28,10 @@
             @keydown.up="onArrowUp"
             @keydown.enter="onEnter"
             >
-            {{ result.address }}
+            <span class="ml-2">
+                <i class="fa fa-map-marker fa-2x"></i>
+            </span>
+            <span class="ml-3"><b>{{ result.address }}</b></span>
             </li>
             </ul>
         </div>
@@ -156,25 +164,22 @@
 <style scoped>
   .autocomplete {
     position: relative;
-    width: 100vw;
-  }
-
-  input {
-    width: 100vw;
   }
 
   .autocomplete-results {
     padding: 0;
     margin: 0;
     border: 1px solid #eeeeee;
-    height: 120px;
-    overflow: auto;
+    height: 90vw;
+    /* overflow: auto; */
   }
 
   .autocomplete-result {
     list-style: none;
     text-align: left;
     padding: 4px 2px;
+    border-bottom: 1px thin #000;
+    min-height: 40px;
     cursor: pointer;
   }
 

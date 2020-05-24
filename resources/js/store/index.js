@@ -54,9 +54,11 @@ export default new Vuex.Store({
         state.dropoff = dropoff
     },
     storeUserLocation(state, location) {
+        console.log('l', location)
         state.user = {
             lat: location.lat,
-            long: location.long
+            long: location.long,
+            address: location.address,
         }
     },
     pickupLocation(state, location) {
@@ -65,6 +67,9 @@ export default new Vuex.Store({
             long: location.long
         };
         state.active = 'pickup';
+        if (state.dropoffLocation.lat && state.dropoffLocation.long) {
+            state.checkout = true;
+        }
     },
     dropoffLocation(state, location) {
         state.dropoffLocation = {
@@ -72,7 +77,9 @@ export default new Vuex.Store({
             long: location.long
         };
         state.active = 'dropoff';
-        state.checkout = true;
+        if (state.pickupLocation.lat && state.pickupLocation.long) {
+            state.checkout = true;
+        }
     },
   },
 

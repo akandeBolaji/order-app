@@ -24,6 +24,7 @@ export default {
               dropoff: this.$store.getters.icons.dropoff,
           },
           state: this.$store.getters.active,
+          checkout: this.$store.getters.checkout,
           key: 'AIzaSyBtUbk85zcb99ugoBfOKbuHbFf8eT3xhf8',
       }
     },
@@ -32,62 +33,59 @@ export default {
             this.getUserLocation();
         }
         else if (this.state == 'pickup') {
-            this.updatePickupLocation()
+            this.updatePickupLocation('direct');
         }
         else if (this.state == 'dropoff') {
-            this.updateDropoffLocation()
+            this.updateDropoffLocation('direct');
         }
     },
+
+    computed: {
+        endpoint() {
+            return `https://maps.googleapis.com/maps/api/geocode/json?latlng=${this.lat},${this.lng}&key=${this.key}`;
+        }
+    },
+
     methods: {
-        getUserLocation() {
-            console.log('hi');
-            navigator.geolocation.getCurrentPosition(
-            position => {
-                this.lat = position.coords.latitude;
-                this.lng = position.coords.longitude;
-                this.addDefaultLocation();
-                this.getUserAddress();
-                this.$store.commit('storeUserLocation', {'lat' : this.lat, 'long' : this.lng, 'address' : this.address});
-                console.log('hi',this.lng, this.lat);
-            },
-            error => {
-                console.log("Error getting location");
+        updateDropoffLocation(type, map=null) {
+            if (type == 'direct') {
+                var map = this.initMap(this.dropoff.lat, this.dropoff.lng);
+                let marker = this.addMarker(this.dropoff.lat, this.dropoff.lng, this.icons.dropoff, map);
+                let text = 'Dropoff';
+                let infowindow = this.setInfowindow(map, marker, text);
+                if (this.checkout) {
+                    this.updatePickupLocation('referred', map);
+                    this.centerMap(map);
+                    this.makePolyline(map);
+                }
             }
-            );
+            else {
+                let marker = this.addMarker(this.dropoff.lat, this.dropoff.lng, this.icons.dropoff, map);
+                let text = 'Dropoff';
+                let infowindow = this.setInfowindow(map, marker, text);
+            }
         },
 
-        updateDropoffLocation() {
-            console.log('lat', this.pickup.lat, 'lng', this.pickup.lng)
-            var map = new google.maps.Map(this.$refs['map'], {
-            zoom: 14,
-            center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
-            mapTypeId: 'terrain',
-            });
+        updatePickupLocation(type, map=null) {
+            if (type == 'direct') {
+                var map = this.initMap(this.pickup.lat, this.pickup.lng);
+                let marker = this.addMarker(this.pickup.lat, this.pickup.lng, this.icons.pickup, map);
+                let text = 'Pickup';
+                let infowindow = this.setInfowindow(map, marker, text);
+                if (this.checkout) {
+                    this.updateDropoffLocation('referred', map);
+                    this.centerMap(map);
+                    this.makePolyline(map);
+                }
+            }
+            else  {
+                let marker = this.addMarker(this.pickup.lat, this.pickup.lng, this.icons.pickup, map);
+                let text = 'Pickup';
+                let infowindow = this.setInfowindow(map, marker, text);
+            }
+        },
 
-            // new GmapsCubicBezier(new google.maps.LatLng(this.pickup.lat, lng), new google.maps.LatLng(lat, lng), map);
-
-            const lat = this.dropoff.lat;
-            const lng = this.dropoff.lng;
-            let marker = new google.maps.Marker({
-                position: new google.maps.LatLng(lat, lng),
-                map: map,
-                icon: this.getIcon(this.icons.dropoff),
-            });
-            var infowindow = new google.maps.InfoWindow();
-            infowindow.setContent(`<div class="ui header">Dropoff</div>`);
-            infowindow.open(map, marker);
-
-            const pickup_lat = this.pickup.lat;
-            const pickup_lng = this.pickup.lng;
-            let pickup_marker = new google.maps.Marker({
-                position: new google.maps.LatLng(pickup_lat, pickup_lng),
-                map: map,
-                icon: this.getIcon(this.icons.pickup),
-            });
-            var pickup_infowindow = new google.maps.InfoWindow();
-            pickup_infowindow.setContent(`<div class="ui header">Pickup</div>`);
-            pickup_infowindow.open(map, pickup_marker);
-
+        makePolyline(map) {
             var flightPlanCoordinates = [
                  {lat: this.pickup.lat, lng: this.pickup.lng},
                  {lat: this.dropoff.lat, lng: this.dropoff.lng},
@@ -103,67 +101,89 @@ export default {
             flightPath.setMap(map);
         },
 
-        updatePickupLocation() {
-            console.log('lat', this.pickup.lat, 'lng', this.pickup.lng)
-            var map = new google.maps.Map(this.$refs['map'], {
-            zoom: 14,
-            center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
-            mapTypeId: 'terrain',
-            });
+        centerMap(map) {
+             //Create LatLngBounds object.
+            var latlngbounds = new google.maps.LatLngBounds();
+            //Extend each marker's position in LatLngBounds object.
+            latlngbounds.extend( new google.maps.LatLng(this.pickup.lat, this.pickup.lng));
+            latlngbounds.extend( new google.maps.LatLng(this.dropoff.lat, this.dropoff.lng));
+            //Get the boundaries of the Map.
+            var bounds = new google.maps.LatLngBounds();
 
-            const lat = this.pickup.lat;
-            const lng = this.pickup.lng;
+            //Center map and adjust Zoom based on the position of all markers.
+            map.setCenter(latlngbounds.getCenter());
+            map.fitBounds(latlngbounds);
+        },
+
+        setInfowindow(map, marker, text) {
+            let infowindow = new google.maps.InfoWindow();
+            infowindow.setContent(`<div class="ui header">${text}</div>`);
+            infowindow.open(map, marker);
+            return infowindow;
+        },
+
+        addMarker(lat, lng, icon, map) {
             let marker = new google.maps.Marker({
                 position: new google.maps.LatLng(lat, lng),
                 map: map,
-                icon: this.getIcon(this.icons.pickup)
+                icon: this.getIcon(icon)
             });
-            var infowindow = new google.maps.InfoWindow();
-            infowindow.setContent(`<div class="ui header">Pickup</div>`);
-            infowindow.open(map, marker);
+            return marker;
+        },
+
+        getIcon(image) {
+            var icon = {
+                url: image, // url
+                scaledSize: new google.maps.Size(25, 25),
+                origin: new google.maps.Point(0,0),
+                anchor: new google.maps.Point(0, 0)
+            };
+            return icon;
+        },
+
+        initMap(lat, lng) {
+            var map = new google.maps.Map(this.$refs['map'], {
+            zoom: 14,
+            center: new google.maps.LatLng(lat, lng),
+            mapTypeId: 'terrain',
+            mapTypeControl: false,
+            });
+            return map;
+        },
+
+        getUserLocation() {
+            navigator.geolocation.getCurrentPosition(
+            position => {
+                this.lat = position.coords.latitude;
+                this.lng = position.coords.longitude;
+                this.addDefaultLocation();
+                this.getUserAddress();
+            },
+            error => {
+                console.log("Error getting location");
+            }
+            );
+        },
+
+        addDefaultLocation() {
+            let map = this.initMap(this.lat, this.lng);
+            let marker = this.addMarker(this.lat, this.lng, this.icons.pickup, map);
+            let text = 'Your Location';
+            let infowindow = this.setInfowindow(map, marker, text);
         },
 
         getUserAddress() {
-            api.get(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${this.lat},${this.lng}&key=${this.key}`
-            )
+            api.get(this.endpoint)
             .then(res => {
                 console.log('address', res);
                 this.address = res.data.results[0].formatted_address;
+                this.$store.commit('storeUserLocation', {'lat' : this.lat, 'long' : this.lng, 'address' : this.address});
             })
             .catch(error => {
                 //console.log(error.message);
             });
         },
 
-        addDefaultLocation() {
-            var map = new google.maps.Map(this.$refs['map'], {
-            zoom: 14,
-            center: new google.maps.LatLng(this.lat, this.lng),
-           mapTypeId: 'terrain',
-            });
-
-            const lat = this.lat;
-            const lng = this.lng;
-            let marker = new google.maps.Marker({
-                position: new google.maps.LatLng(lat, lng),
-                map: map,
-                icon: this.getIcon(this.icons.pickup)
-            });
-            var infowindow = new google.maps.InfoWindow();
-            infowindow.setContent(`<div class="ui header">Your location</div>`);
-            infowindow.open(map, marker);
-        },
-
-        getIcon(image) {
-            var icon = {
-                url: image, // url
-                scaledSize: new google.maps.Size(25, 25), // scaled size
-                origin: new google.maps.Point(0,0), // origin
-                anchor: new google.maps.Point(0, 0) // anchor
-            };
-            return icon;
-        }
     },
 
 }

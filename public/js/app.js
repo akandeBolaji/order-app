@@ -2004,6 +2004,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -2169,6 +2177,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -2237,6 +2255,7 @@ __webpack_require__.r(__webpack_exports__);
         dropoff: this.$store.getters.icons.dropoff
       },
       state: this.$store.getters.active,
+      checkout: this.$store.getters.checkout,
       key: 'AIzaSyBtUbk85zcb99ugoBfOKbuHbFf8eT3xhf8'
     };
   },
@@ -2244,63 +2263,78 @@ __webpack_require__.r(__webpack_exports__);
     if (this.state == 'default') {
       this.getUserLocation();
     } else if (this.state == 'pickup') {
-      this.updatePickupLocation();
+      this.updatePickupLocation('direct');
     } else if (this.state == 'dropoff') {
-      this.updateDropoffLocation();
+      this.updateDropoffLocation('direct');
+    }
+  },
+  computed: {
+    endpoint: function endpoint() {
+      return "https://maps.googleapis.com/maps/api/geocode/json?latlng=".concat(this.lat, ",").concat(this.lng, "&key=").concat(this.key);
     }
   },
   methods: {
-    getUserLocation: function getUserLocation() {
+    updateDropoffLocation: function updateDropoffLocation(type) {
       var _this = this;
 
-      console.log('hi');
-      navigator.geolocation.getCurrentPosition(function (position) {
-        _this.lat = position.coords.latitude;
-        _this.lng = position.coords.longitude;
+      var map = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      return function (map) {
+        if (type == 'direct') {
+          var map = _this.initMap(_this.dropoff.lat, _this.dropoff.lng);
 
-        _this.addDefaultLocation();
+          var marker = _this.addMarker(_this.dropoff.lat, _this.dropoff.lng, _this.icons.dropoff, map);
 
-        _this.getUserAddress();
+          var text = 'Dropoff';
 
-        _this.$store.commit('storeUserLocation', {
-          'lat': _this.lat,
-          'long': _this.lng,
-          'address': _this.address
-        });
+          var infowindow = _this.setInfowindow(map, marker, text);
 
-        console.log('hi', _this.lng, _this.lat);
-      }, function (error) {
-        console.log("Error getting location");
-      });
+          if (_this.checkout) {
+            _this.updatePickupLocation('referred', map);
+
+            _this.centerMap(map);
+
+            _this.makePolyline(map);
+          }
+        } else {
+          var _marker = _this.addMarker(_this.dropoff.lat, _this.dropoff.lng, _this.icons.dropoff, map);
+
+          var _text = 'Dropoff';
+
+          var _infowindow = _this.setInfowindow(map, _marker, _text);
+        }
+      }(map);
     },
-    updateDropoffLocation: function updateDropoffLocation() {
-      console.log('lat', this.pickup.lat, 'lng', this.pickup.lng);
-      var map = new google.maps.Map(this.$refs['map'], {
-        zoom: 14,
-        center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
-        mapTypeId: 'terrain'
-      }); // new GmapsCubicBezier(new google.maps.LatLng(this.pickup.lat, lng), new google.maps.LatLng(lat, lng), map);
+    updatePickupLocation: function updatePickupLocation(type) {
+      var _this2 = this;
 
-      var lat = this.dropoff.lat;
-      var lng = this.dropoff.lng;
-      var marker = new google.maps.Marker({
-        position: new google.maps.LatLng(lat, lng),
-        map: map,
-        icon: this.getIcon(this.icons.dropoff)
-      });
-      var infowindow = new google.maps.InfoWindow();
-      infowindow.setContent("<div class=\"ui header\">Dropoff</div>");
-      infowindow.open(map, marker);
-      var pickup_lat = this.pickup.lat;
-      var pickup_lng = this.pickup.lng;
-      var pickup_marker = new google.maps.Marker({
-        position: new google.maps.LatLng(pickup_lat, pickup_lng),
-        map: map,
-        icon: this.getIcon(this.icons.pickup)
-      });
-      var pickup_infowindow = new google.maps.InfoWindow();
-      pickup_infowindow.setContent("<div class=\"ui header\">Pickup</div>");
-      pickup_infowindow.open(map, pickup_marker);
+      var map = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      return function (map) {
+        if (type == 'direct') {
+          var map = _this2.initMap(_this2.pickup.lat, _this2.pickup.lng);
+
+          var marker = _this2.addMarker(_this2.pickup.lat, _this2.pickup.lng, _this2.icons.pickup, map);
+
+          var text = 'Pickup';
+
+          var infowindow = _this2.setInfowindow(map, marker, text);
+
+          if (_this2.checkout) {
+            _this2.updateDropoffLocation('referred', map);
+
+            _this2.centerMap(map);
+
+            _this2.makePolyline(map);
+          }
+        } else {
+          var _marker2 = _this2.addMarker(_this2.pickup.lat, _this2.pickup.lng, _this2.icons.pickup, map);
+
+          var _text2 = 'Pickup';
+
+          var _infowindow2 = _this2.setInfowindow(map, _marker2, _text2);
+        }
+      }(map);
+    },
+    makePolyline: function makePolyline(map) {
       var flightPlanCoordinates = [{
         lat: this.pickup.lat,
         lng: this.pickup.lng
@@ -2317,62 +2351,85 @@ __webpack_require__.r(__webpack_exports__);
       });
       flightPath.setMap(map);
     },
-    updatePickupLocation: function updatePickupLocation() {
-      console.log('lat', this.pickup.lat, 'lng', this.pickup.lng);
-      var map = new google.maps.Map(this.$refs['map'], {
-        zoom: 14,
-        center: new google.maps.LatLng(this.pickup.lat, this.pickup.lng),
-        mapTypeId: 'terrain'
-      });
-      var lat = this.pickup.lat;
-      var lng = this.pickup.lng;
-      var marker = new google.maps.Marker({
-        position: new google.maps.LatLng(lat, lng),
-        map: map,
-        icon: this.getIcon(this.icons.pickup)
-      });
-      var infowindow = new google.maps.InfoWindow();
-      infowindow.setContent("<div class=\"ui header\">Pickup</div>");
-      infowindow.open(map, marker);
-    },
-    getUserAddress: function getUserAddress() {
-      var _this2 = this;
+    centerMap: function centerMap(map) {
+      //Create LatLngBounds object.
+      var latlngbounds = new google.maps.LatLngBounds(); //Extend each marker's position in LatLngBounds object.
 
-      api.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=".concat(this.lat, ",").concat(this.lng, "&key=").concat(this.key)).then(function (res) {
-        console.log('address', res);
-        _this2.address = res.data.results[0].formatted_address;
-      })["catch"](function (error) {//console.log(error.message);
-      });
+      latlngbounds.extend(new google.maps.LatLng(this.pickup.lat, this.pickup.lng));
+      latlngbounds.extend(new google.maps.LatLng(this.dropoff.lat, this.dropoff.lng)); //Get the boundaries of the Map.
+
+      var bounds = new google.maps.LatLngBounds(); //Center map and adjust Zoom based on the position of all markers.
+
+      map.setCenter(latlngbounds.getCenter());
+      map.fitBounds(latlngbounds);
     },
-    addDefaultLocation: function addDefaultLocation() {
-      var map = new google.maps.Map(this.$refs['map'], {
-        zoom: 14,
-        center: new google.maps.LatLng(this.lat, this.lng),
-        mapTypeId: 'terrain'
-      });
-      var lat = this.lat;
-      var lng = this.lng;
+    setInfowindow: function setInfowindow(map, marker, text) {
+      var infowindow = new google.maps.InfoWindow();
+      infowindow.setContent("<div class=\"ui header\">".concat(text, "</div>"));
+      infowindow.open(map, marker);
+      return infowindow;
+    },
+    addMarker: function addMarker(lat, lng, icon, map) {
       var marker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
         map: map,
-        icon: this.getIcon(this.icons.pickup)
+        icon: this.getIcon(icon)
       });
-      var infowindow = new google.maps.InfoWindow();
-      infowindow.setContent("<div class=\"ui header\">Your location</div>");
-      infowindow.open(map, marker);
+      return marker;
     },
     getIcon: function getIcon(image) {
       var icon = {
         url: image,
         // url
         scaledSize: new google.maps.Size(25, 25),
-        // scaled size
         origin: new google.maps.Point(0, 0),
-        // origin
-        anchor: new google.maps.Point(0, 0) // anchor
-
+        anchor: new google.maps.Point(0, 0)
       };
       return icon;
+    },
+    initMap: function initMap(lat, lng) {
+      var map = new google.maps.Map(this.$refs['map'], {
+        zoom: 14,
+        center: new google.maps.LatLng(lat, lng),
+        mapTypeId: 'terrain',
+        mapTypeControl: false
+      });
+      return map;
+    },
+    getUserLocation: function getUserLocation() {
+      var _this3 = this;
+
+      navigator.geolocation.getCurrentPosition(function (position) {
+        _this3.lat = position.coords.latitude;
+        _this3.lng = position.coords.longitude;
+
+        _this3.addDefaultLocation();
+
+        _this3.getUserAddress();
+      }, function (error) {
+        console.log("Error getting location");
+      });
+    },
+    addDefaultLocation: function addDefaultLocation() {
+      var map = this.initMap(this.lat, this.lng);
+      var marker = this.addMarker(this.lat, this.lng, this.icons.pickup, map);
+      var text = 'Your Location';
+      var infowindow = this.setInfowindow(map, marker, text);
+    },
+    getUserAddress: function getUserAddress() {
+      var _this4 = this;
+
+      api.get(this.endpoint).then(function (res) {
+        console.log('address', res);
+        _this4.address = res.data.results[0].formatted_address;
+
+        _this4.$store.commit('storeUserLocation', {
+          'lat': _this4.lat,
+          'long': _this4.lng,
+          'address': _this4.address
+        });
+      })["catch"](function (error) {//console.log(error.message);
+      });
     }
   }
 });
@@ -2421,6 +2478,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -2435,8 +2496,10 @@ __webpack_require__.r(__webpack_exports__);
       arrowCounter: -1,
       user: {
         lat: this.$store.getters.user.lat,
-        "long": this.$store.getters.user["long"]
-      }
+        "long": this.$store.getters.user["long"],
+        address: this.$store.getters.user.address
+      },
+      showUser: true
     };
   },
   mounted: function mounted() {
@@ -2512,6 +2575,8 @@ __webpack_require__.r(__webpack_exports__);
       }); //console.log(this.autocomplete);
 
       google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        _this2.isOpen = false;
+
         _this2.$emit('closePickup', {
           'pickup': _this2.pickup
         });
@@ -2537,6 +2602,16 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (error) {
         console.log(error.message);
       });
+    },
+    useLocation: function useLocation() {
+      this.pickup = this.user.address;
+      this.pickup_lat = this.user.lat;
+      this.pickup_long = this.user["long"];
+      console.log('pickup', this.pickup);
+      this.$emit('closePickup', {
+        'pickup': this.pickup
+      });
+      this.updateOnMap();
     },
     updateOnMap: function updateOnMap() {
       this.$store.commit('pickupLocation', {
@@ -7021,7 +7096,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n  width: 100vw;\n}\ninput[data-v-295e7d85] {\n  width: 100vw;\n}\n.autocomplete-results[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
+exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n}\n.autocomplete-results[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 90vw;\n  /* overflow: auto; */\n}\n.autocomplete-result[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px thin #000;\n  min-height: 40px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -7040,7 +7115,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.main[data-v-f2b6376c] {\n    height: 100vh;\n    width: 100vw;\n}\n.form[data-v-f2b6376c] {\n    height: 15vh;\n}\n.full-map[data-v-f2b6376c] {\n    height: 85vh;\n}\n.map-with-checkout[data-v-f2b6376c] {\n    height: 75vh;\n}\n.checkout[data-v-f2b6376c] {\n    height: 10vh;\n}\n", ""]);
+exports.push([module.i, "\n.main[data-v-f2b6376c] {\n    height: 100vh;\n    width: 100vw;\n}\n.form[data-v-f2b6376c] {\n    height: 15vh;\n}\n.full-map[data-v-f2b6376c] {\n    height: 85vh;\n}\n.map-with-checkout[data-v-f2b6376c] {\n    height: 70vh;\n}\n.checkout[data-v-f2b6376c] {\n    height: 15vh;\n}\n", ""]);
 
 // exports
 
@@ -7059,7 +7134,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete[data-v-40fb1aa7] {\n  position: relative;\n  width: 100vw;\n}\ninput[data-v-40fb1aa7] {\n  width: 100vw;\n}\n.autocomplete-results[data-v-40fb1aa7] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-40fb1aa7] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-40fb1aa7]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
+exports.push([module.i, "\ninput[data-v-40fb1aa7] {\n      caret-color: #4AAE9B;\n      font-weight: bold;\n}\ninput[data-v-40fb1aa7]:focus {\n      outline: none !important;\n      border-color: #4AAE9B !important;\n}\n.autocomplete[data-v-40fb1aa7] {\n  position: relative;\n}\n.autocomplete-results[data-v-40fb1aa7] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-40fb1aa7] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-40fb1aa7]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -40915,39 +40990,48 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "card" }, [
-    _c("header", { attrs: { id: "header" } }, [
-      _c("span", { on: { click: _vm.goBack } }, [_vm._v(" Back")]),
+  return _c("div", [
+    _c("h3", { staticClass: "my-2 d-flex justify-content-between" }, [
+      _c("div", { on: { click: _vm.goBack } }, [
+        _c("i", { staticClass: "fa fa-chevron-left" }),
+        _vm._v("Back")
+      ]),
       _vm._v(" "),
-      _c("span", { staticClass: "text-center" }, [_vm._v("  Dropoff Address")])
+      _c("div", [_vm._v("Dropoff")]),
+      _vm._v(" "),
+      _c("div")
     ]),
     _vm._v(" "),
-    _c("div", { staticClass: "autocomplete" }, [
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.dropoff,
-            expression: "dropoff"
-          }
-        ],
-        ref: "drop",
-        staticClass: "input",
-        attrs: { type: "text" },
-        domProps: { value: _vm.dropoff },
-        on: {
-          input: [
-            function($event) {
-              if ($event.target.composing) {
-                return
+    _c("div", { staticClass: "autocomplete mx-2" }, [
+      _c("form", [
+        _c("div", { staticClass: "form-group" }, [
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.dropoff,
+                expression: "dropoff"
               }
-              _vm.dropoff = $event.target.value
-            },
-            _vm.onChange
-          ]
-        }
-      }),
+            ],
+            ref: "drop",
+            staticClass: "form-control bg-light",
+            attrs: { type: "text", placeholder: "Dropoff Address" },
+            domProps: { value: _vm.dropoff },
+            on: {
+              input: [
+                function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.dropoff = $event.target.value
+                },
+                _vm.onChange
+              ]
+            }
+          })
+        ])
+      ]),
       _vm._v(" "),
       _vm.isOpen
         ? _c(
@@ -41013,9 +41097,11 @@ var render = function() {
                         }
                       },
                       [
-                        _vm._v(
-                          "\n        " + _vm._s(result.address) + "\n        "
-                        )
+                        _vm._m(0, true),
+                        _vm._v(" "),
+                        _c("span", { staticClass: "ml-3" }, [
+                          _c("b", [_vm._v(_vm._s(result.address))])
+                        ])
                       ]
                     )
                   })
@@ -41026,7 +41112,16 @@ var render = function() {
     ])
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", { staticClass: "ml-2" }, [
+      _c("i", { staticClass: "fa fa-map-marker fa-2x" })
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -41053,72 +41148,107 @@ var render = function() {
     { staticClass: "main" },
     [
       _c("div", { staticClass: "form card" }, [
-        _c("header", { staticClass: "text-center", attrs: { id: "header" } }, [
-          _vm._v("\n            Parcel request\n        ")
-        ]),
+        _vm._m(0),
         _vm._v(" "),
-        _c("input", {
-          directives: [
-            {
-              name: "model",
-              rawName: "v-model",
-              value: _vm.pickup,
-              expression: "pickup"
-            }
-          ],
-          ref: "picks",
-          attrs: { type: "text", placeholder: "Pickup Address" },
-          domProps: { value: _vm.pickup },
-          on: {
-            focus: function($event) {
-              return _vm.openPickup()
-            },
-            input: function($event) {
-              if ($event.target.composing) {
-                return
+        _c("form", { staticClass: "mx-2" }, [
+          _c("div", { staticClass: "form-group" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.pickup,
+                  expression: "pickup"
+                }
+              ],
+              staticClass: "form-control bg-light",
+              attrs: { type: "text", placeholder: "Pickup Address" },
+              domProps: { value: _vm.pickup },
+              on: {
+                focus: function($event) {
+                  return _vm.openPickup()
+                },
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.pickup = $event.target.value
+                }
               }
-              _vm.pickup = $event.target.value
-            }
-          }
-        }),
-        _vm._v(" "),
-        _c("input", {
-          directives: [
-            {
-              name: "model",
-              rawName: "v-model",
-              value: _vm.dropoff,
-              expression: "dropoff"
-            }
-          ],
-          attrs: { type: "text", placeholder: "Dropoff Address" },
-          domProps: { value: _vm.dropoff },
-          on: {
-            focus: function($event) {
-              return _vm.openDropoff()
-            },
-            input: function($event) {
-              if ($event.target.composing) {
-                return
+            })
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.dropoff,
+                  expression: "dropoff"
+                }
+              ],
+              staticClass: "form-control bg-light",
+              attrs: { type: "text", placeholder: "Dropoff Address" },
+              domProps: { value: _vm.dropoff },
+              on: {
+                focus: function($event) {
+                  return _vm.openDropoff()
+                },
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.dropoff = $event.target.value
+                }
               }
-              _vm.dropoff = $event.target.value
-            }
-          }
-        })
+            })
+          ])
+        ])
       ]),
       _vm._v(" "),
       _c("Map", { class: _vm.checkout ? "map-with-checkout" : "full-map" }),
       _vm._v(" "),
       _vm.checkout
-        ? _c("div", { staticClass: "card checkout" }, [
-            _vm._v("\n        Checkout Form\n    ")
+        ? _c("div", { staticClass: "card checkout px-2" }, [
+            _vm._m(1),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-success btn-lg btn-block",
+                attrs: { type: "button" }
+              },
+              [_vm._v("Enter Parcel Details")]
+            )
           ])
         : _vm._e()
     ],
     1
   )
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "header",
+      { staticClass: "text-center py-1 lead", attrs: { id: "header" } },
+      [_c("h3", [_vm._v("Parcel request")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("h2", { staticClass: "d-flex mt-2" }, [
+      _c("div", { staticClass: "mr-auto" }, [_vm._v("₦1500,00")]),
+      _vm._v(" "),
+      _c("div", [_vm._v("3.3km | 24 mins")])
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -41164,41 +41294,63 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "card" }, [
-    _c("header", { attrs: { id: "header" } }, [
-      _c("span", { on: { click: _vm.goBack } }, [_vm._v(" Back")]),
-      _vm._v(" "),
-      _c("span", { staticClass: "text-center" }, [_vm._v("  Pickup Address")])
-    ]),
+  return _c("div", [
+    _c(
+      "h3",
+      { staticClass: "text-center my-2 d-flex justify-content-between" },
+      [
+        _c("span", { on: { click: _vm.goBack } }, [
+          _c("i", { staticClass: "fas fa-arrow-left" }),
+          _vm._v("Back")
+        ]),
+        _vm._v(" "),
+        _c("div", [_vm._v("Pickup")]),
+        _c("span")
+      ]
+    ),
     _vm._v(" "),
-    _c("div", { staticClass: "autocomplete" }, [
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.pickup,
-            expression: "pickup"
-          }
-        ],
-        ref: "pick",
-        staticClass: "input",
-        attrs: { type: "text" },
-        domProps: { value: _vm.pickup },
-        on: {
-          input: [
-            function($event) {
-              if ($event.target.composing) {
-                return
+    _c("div", { staticClass: "autocomplete mx-2" }, [
+      _c("form", [
+        _c("div", { staticClass: "form-group" }, [
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.pickup,
+                expression: "pickup"
               }
-              _vm.pickup = $event.target.value
-            },
-            _vm.onChange
-          ]
-        }
-      }),
+            ],
+            ref: "pick",
+            staticClass: "form-control bg-light",
+            attrs: { type: "text", placeholder: "Pickup Address" },
+            domProps: { value: _vm.pickup },
+            on: {
+              input: [
+                function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.pickup = $event.target.value
+                },
+                _vm.onChange
+              ]
+            }
+          })
+        ])
+      ]),
       _vm._v(" "),
-      _vm.isOpen
+      !_vm.isOpen && !_vm.pickup
+        ? _c(
+            "button",
+            {
+              staticClass: "btn btn-success btn-lg btn-block",
+              attrs: { type: "button" },
+              on: { click: _vm.useLocation }
+            },
+            [_vm._v("Use your location")]
+          )
+        : _vm.isOpen
         ? _c(
             "ul",
             { staticClass: "autocomplete-results" },
@@ -55321,9 +55473,11 @@ var debug = "development" !== 'production';
       state.dropoff = dropoff;
     },
     storeUserLocation: function storeUserLocation(state, location) {
+      console.log('l', location);
       state.user = {
         lat: location.lat,
-        "long": location["long"]
+        "long": location["long"],
+        address: location.address
       };
     },
     pickupLocation: function pickupLocation(state, location) {
@@ -55332,6 +55486,10 @@ var debug = "development" !== 'production';
         "long": location["long"]
       };
       state.active = 'pickup';
+
+      if (state.dropoffLocation.lat && state.dropoffLocation["long"]) {
+        state.checkout = true;
+      }
     },
     dropoffLocation: function dropoffLocation(state, location) {
       state.dropoffLocation = {
@@ -55339,7 +55497,10 @@ var debug = "development" !== 'production';
         "long": location["long"]
       };
       state.active = 'dropoff';
-      state.checkout = true;
+
+      if (state.pickupLocation.lat && state.pickupLocation["long"]) {
+        state.checkout = true;
+      }
     }
   },
   getters: {

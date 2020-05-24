@@ -1,15 +1,25 @@
 <template>
     <div class="main">
         <div class="form card">
-            <header id="header" class="text-center">
-                Parcel request
+            <header id="header" class="text-center py-1 lead">
+                <h3>Parcel request</h3>
             </header>
-            <input type="text" @focus="openPickup()" v-model="pickup" placeholder="Pickup Address" ref="picks">
-            <input type="text" @focus="openDropoff()" v-model="dropoff" placeholder="Dropoff Address">
+            <form class="mx-2">
+                <div class="form-group">
+                    <input type="text"  @focus="openPickup()" v-model="pickup" class="form-control bg-light" placeholder="Pickup Address">
+                </div>
+                <div class="form-group">
+                    <input type="text" @focus="openDropoff()" v-model="dropoff" class="form-control bg-light" placeholder="Dropoff Address">
+                </div>
+            </form>
         </div>
         <Map :class="checkout ? 'map-with-checkout' : 'full-map'"/>
-        <div class="card checkout" v-if="checkout">
-            Checkout Form
+        <div class="card checkout px-2" v-if="checkout">
+            <h2 class="d-flex mt-2">
+                <div class="mr-auto">&#8358;1500,00</div>
+                <div>3.3km | 24 mins</div>
+            </h2>
+            <button type="button" class="btn btn-success btn-lg btn-block">Enter Parcel Details</button>
         </div>
     </div>
 </template>
@@ -59,10 +69,10 @@
         height: 85vh;
     }
     .map-with-checkout {
-        height: 75vh;
+        height: 70vh;
     }
     .checkout {
-        height: 10vh;
+        height: 15vh;
     }
 </style>
 

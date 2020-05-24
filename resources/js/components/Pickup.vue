@@ -1,12 +1,16 @@
 <template>
-    <div class="card">
-
-        <header id="header">
-             <span @click="goBack"> Back</span> <span class="text-center">  Pickup Address</span>
-        </header>
-        <div class="autocomplete">
-            <input type="text" v-model="pickup" @input="onChange" class="input" ref="pick">
-            <ul v-if="isOpen" class="autocomplete-results">
+    <div>
+        <h3 class="text-center my-2 d-flex justify-content-between">
+             <span @click="goBack"><i class="fas fa-arrow-left"></i>Back</span> <div>Pickup</div><span></span>
+        </h3>
+        <div class="autocomplete mx-2">
+            <form >
+                <div class="form-group">
+                    <input type="text" v-model="pickup" ref="pick"  @input="onChange" class="form-control bg-light" placeholder="Pickup Address">
+                </div>
+            </form>
+            <button type="button" class="btn btn-success btn-lg btn-block" v-if="!isOpen && !pickup" @click="useLocation">Use your location</button>
+            <ul v-else-if="isOpen" class="autocomplete-results">
             <li
             class="loading"
             v-if="isLoading">
@@ -46,7 +50,9 @@
                 user: {
                     lat: this.$store.getters.user.lat,
                     long: this.$store.getters.user.long,
+                    address: this.$store.getters.user.address,
                 },
+                showUser: true
             }
         },
         mounted() {
@@ -109,8 +115,10 @@
 
                     var autocomplete = new google.maps.places.Autocomplete(
                     this.$refs["pick"], { types: [ 'geocode' ], componentRestrictions: { country: "ng" }, bounds: circle.getBounds(), strictbounds: true });
+
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
+                        this.isOpen = false;
                         this.$emit('closePickup', {
                             'pickup' : this.pickup
                         });
@@ -136,6 +144,16 @@
                     console.log(error.message);
                 });
             },
+            useLocation() {
+                this.pickup = this.user.address;
+                this.pickup_lat = this.user.lat;
+                this.pickup_long = this.user.long;
+                console.log('pickup', this.pickup);
+                this.$emit('closePickup', {
+                    'pickup' : this.pickup
+                });
+                this.updateOnMap();
+            },
             updateOnMap() {
                 this.$store.commit('pickupLocation', {lat: this.pickup_lat, long: this.pickup_long})
                 this.$store.commit('changePickup', this.pickup)
@@ -155,13 +173,16 @@
     }
 </script>
 <style scoped>
+    input {
+        caret-color: #4AAE9B;
+        font-weight: bold;
+    }
+    input:focus {
+        outline: none !important;
+        border-color: #4AAE9B !important;
+    }
   .autocomplete {
     position: relative;
-    width: 100vw;
-  }
-
-  input {
-    width: 100vw;
   }
 
   .autocomplete-results {
