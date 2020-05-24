@@ -2482,6 +2482,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -7096,7 +7099,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n}\n.autocomplete-results[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 90vw;\n  /* overflow: auto; */\n}\n.autocomplete-result[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px thin #000;\n  min-height: 40px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
+exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n}\n.autocomplete-results[data-v-295e7d85], .pac-container[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 90vw;\n  /* overflow: auto; */\n}\n.autocomplete-result[data-v-295e7d85], .pac-container[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid #000;\n  min-height: 40px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover, .pac-container[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -7134,7 +7137,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\ninput[data-v-40fb1aa7] {\n      caret-color: #4AAE9B;\n      font-weight: bold;\n}\ninput[data-v-40fb1aa7]:focus {\n      outline: none !important;\n      border-color: #4AAE9B !important;\n}\n.autocomplete[data-v-40fb1aa7] {\n  position: relative;\n}\n.autocomplete-results[data-v-40fb1aa7] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 120px;\n  overflow: auto;\n}\n.autocomplete-result[data-v-40fb1aa7] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-40fb1aa7]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
+exports.push([module.i, "\n.autocomplete[data-v-40fb1aa7] {\n  position: relative;\n}\n.autocomplete-results[data-v-40fb1aa7] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 90vw;\n  /* overflow: auto; */\n}\n.autocomplete-result[data-v-40fb1aa7] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid #000;\n  min-height: 40px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-40fb1aa7]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -41295,19 +41298,15 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c(
-      "h3",
-      { staticClass: "text-center my-2 d-flex justify-content-between" },
-      [
-        _c("span", { on: { click: _vm.goBack } }, [
-          _c("i", { staticClass: "fas fa-arrow-left" }),
-          _vm._v("Back")
-        ]),
-        _vm._v(" "),
-        _c("div", [_vm._v("Pickup")]),
-        _c("span")
-      ]
-    ),
+    _c("h3", { staticClass: "my-2 d-flex justify-content-between" }, [
+      _c("span", { on: { click: _vm.goBack } }, [
+        _c("i", { staticClass: "fas fa-arrow-left" }),
+        _vm._v("Back")
+      ]),
+      _vm._v(" "),
+      _c("div", [_vm._v("Pickup")]),
+      _c("span")
+    ]),
     _vm._v(" "),
     _c("div", { staticClass: "autocomplete mx-2" }, [
       _c("form", [
@@ -41414,9 +41413,11 @@ var render = function() {
                         }
                       },
                       [
-                        _vm._v(
-                          "\n        " + _vm._s(result.address) + "\n        "
-                        )
+                        _vm._m(0, true),
+                        _vm._v(" "),
+                        _c("span", { staticClass: "ml-3" }, [
+                          _c("b", [_vm._v(_vm._s(result.address))])
+                        ])
                       ]
                     )
                   })
@@ -41427,7 +41428,16 @@ var render = function() {
     ])
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", { staticClass: "ml-2" }, [
+      _c("i", { staticClass: "fa fa-map-marker fa-2x" })
+    ])
+  }
+]
 render._withStripped = true
 
 

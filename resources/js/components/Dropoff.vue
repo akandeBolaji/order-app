@@ -166,7 +166,7 @@
     position: relative;
   }
 
-  .autocomplete-results {
+  .autocomplete-results, .pac-container {
     padding: 0;
     margin: 0;
     border: 1px solid #eeeeee;
@@ -174,16 +174,17 @@
     /* overflow: auto; */
   }
 
-  .autocomplete-result {
+
+  .autocomplete-result, .pac-container {
     list-style: none;
     text-align: left;
     padding: 4px 2px;
-    border-bottom: 1px thin #000;
+    border-bottom: 1px solid #000;
     min-height: 40px;
     cursor: pointer;
   }
 
-  .autocomplete-result:hover {
+  .autocomplete-result:hover, .pac-container:hover {
     background-color: #4AAE9B;
     color: white;
   }

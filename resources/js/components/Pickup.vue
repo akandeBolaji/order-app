@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h3 class="text-center my-2 d-flex justify-content-between">
+        <h3 class="my-2 d-flex justify-content-between">
              <span @click="goBack"><i class="fas fa-arrow-left"></i>Back</span> <div>Pickup</div><span></span>
         </h3>
         <div class="autocomplete mx-2">
@@ -11,7 +11,7 @@
             </form>
             <button type="button" class="btn btn-success btn-lg btn-block" v-if="!isOpen && !pickup" @click="useLocation">Use your location</button>
             <ul v-else-if="isOpen" class="autocomplete-results">
-            <li
+                <li
             class="loading"
             v-if="isLoading">
             Loading results...
@@ -27,7 +27,10 @@
             @keydown.up="onArrowUp"
             @keydown.enter="onEnter"
             >
-            {{ result.address }}
+            <span class="ml-2">
+                <i class="fa fa-map-marker fa-2x"></i>
+            </span>
+            <span class="ml-3"><b>{{ result.address }}</b></span>
             </li>
             </ul>
         </div>
@@ -173,14 +176,6 @@
     }
 </script>
 <style scoped>
-    input {
-        caret-color: #4AAE9B;
-        font-weight: bold;
-    }
-    input:focus {
-        outline: none !important;
-        border-color: #4AAE9B !important;
-    }
   .autocomplete {
     position: relative;
   }
@@ -189,14 +184,16 @@
     padding: 0;
     margin: 0;
     border: 1px solid #eeeeee;
-    height: 120px;
-    overflow: auto;
+    height: 90vw;
+    /* overflow: auto; */
   }
 
   .autocomplete-result {
     list-style: none;
     text-align: left;
     padding: 4px 2px;
+    border-bottom: 1px solid #000;
+    min-height: 40px;
     cursor: pointer;
   }
 
