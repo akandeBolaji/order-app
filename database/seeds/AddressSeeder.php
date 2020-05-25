@@ -13,45 +13,46 @@ class AddressSeeder extends Seeder
     public function run()
     {
         Address::create([
-            'address' => 'Ketu, Lagos',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Ojota, Lagos, Nigeria',
+            'latitude' => '6.5873161',
+            'longitude' => '3.3785711'
         ]);
 
         Address::create([
-            'address' => 'Ojoto, Abuja',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Lekki Phase 1, Lekki, Nigeria',
+            'latitude' => '6.4478093',
+            'longitude' => '3.4723495'
         ]);
 
         Address::create([
-            'address' => 'Kanu',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Victoria Island, Lagos, Nigeria',
+            'latitude' => '6.4290982',
+            'longitude' => '3.4238032'
         ]);
 
         Address::create([
-            'address' => 'Anambra',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Yaba, Oworonshoki, Nigeria',
+            'latitude' => '6.5095442',
+            'longitude' => '3.3710936'
         ]);
 
         Address::create([
-            'address' => 'Rivers',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Lagos Island, Lagos, Nigeria',
+            'latitude' => '6.4550805',
+            'longitude' => '3.394332'
         ]);
 
         Address::create([
-            'address' => 'Kebbi',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Lagos Mainland, Lagos, Nigeria',
+            'latitude' => '6.5059002',
+            'longitude' => '3.3780722'
         ]);
 
+
         Address::create([
-            'address' => 'Yola',
-            'latitude' => '5.628262',
-            'longitude' => '4.6278292'
+            'address' => 'Ikorodu, Nigeria',
+            'latitude' => '6.6194131',
+            'longitude' => '3.5104537'
         ]);
     }
 }
