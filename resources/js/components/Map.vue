@@ -130,6 +130,7 @@ export default {
                     curveMarker = new google.maps.Marker({
                         position: pos1,
                         clickable: false,
+                        draggable: false,
                         icon: symbol,
                         zIndex: 0, // behind the other markers
                         map: map
@@ -168,6 +169,8 @@ export default {
             let marker = new google.maps.Marker({
                 position: new google.maps.LatLng(lat, lng),
                 map: map,
+                clickable: false,
+                draggable: false,
                 icon: this.getIcon(icon)
             });
             return marker;
