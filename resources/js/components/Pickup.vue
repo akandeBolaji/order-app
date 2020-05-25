@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h3 class="my-2 d-flex justify-content-between">
-             <span @click="goBack"><i class="fas fa-arrow-left"></i>Back</span> <div>Pickup</div><span></span>
+        <h3 class="m-2 d-flex justify-content-between">
+             <div @click="goBack"><i class="fas fa-chevron-left"></i>Back</div> <div>Pickup</div><div style="visibility: hidden">space</div>
         </h3>
         <div class="autocomplete mx-2">
             <form >
@@ -116,10 +116,10 @@
             },
             displayGoogleAutocomplete() {
                 //this.isOpen = false;
-                    var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
+                    //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
 
                     var autocomplete = new google.maps.places.Autocomplete(
-                    this.$refs["pick"], { types: [ 'geocode' ], componentRestrictions: { country: "ng" }, bounds: circle.getBounds(), strictbounds: true });
+                    this.$refs["pick"], { types: [ 'geocode' ], location: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius:5000, strictbounds: true });
 
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
@@ -213,7 +213,7 @@
     color: white;
   }
 
-  .gm-ui-hover-effect, .gm-style-iw-t::after {
+  .gm-ui-hover-effect, .gm-style-iw-t::after, .gm-svpc, .gm-control-active, .gmnoprint {
       display: none !important;
   }
 

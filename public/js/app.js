@@ -2010,8 +2010,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -2096,16 +2094,11 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       //this.isOpen = false;
-      var circle = new google.maps.Circle({
-        center: new google.maps.LatLng("".concat(this.pickup.lat, ", ").concat(this.pickup["long"])),
-        radius: 50000
-      });
-      var autocomplete = new google.maps.places.Autocomplete(this.$refs["drop"], {
+      //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.pickup.lat}, ${this.pickup.long}`), radius: 50000 })
+      var autocomplete = new google.maps.places.Autocomplete(this.$refs["pick"], {
         types: ['geocode'],
-        componentRestrictions: {
-          country: "ng"
-        },
-        bounds: circle.getBounds(),
+        location: new google.maps.LatLng("".concat(this.user.lat, ", ").concat(this.user["long"])),
+        radius: 5000,
         strictbounds: true
       }); //console.log(this.autocomplete);
 
@@ -2614,16 +2607,11 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       //this.isOpen = false;
-      var circle = new google.maps.Circle({
-        center: new google.maps.LatLng("".concat(this.user.lat, ", ").concat(this.user["long"])),
-        radius: 50000
-      });
+      //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
       var autocomplete = new google.maps.places.Autocomplete(this.$refs["pick"], {
         types: ['geocode'],
-        componentRestrictions: {
-          country: "ng"
-        },
-        bounds: circle.getBounds(),
+        location: new google.maps.LatLng("".concat(this.user.lat, ", ").concat(this.user["long"])),
+        radius: 5000,
         strictbounds: true
       }); //console.log(this.autocomplete);
 
@@ -7168,7 +7156,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete {\n  position: relative;\n}\n.autocomplete-results {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  min-height: 90vw !important;\n  /* overflow: auto; */\n}\n.pac-container {\n    min-height: 90% !important;\n}\n.pac-item {\n  min-height: 60px;\n  padding: 4px 2px;\n}\n.autocomplete-result{\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid grey;\n  min-height: 60px;\n  cursor: pointer;\n}\n.autocomplete-result:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n.gm-ui-hover-effect, .gm-style-iw-t::after {\n    display: none !important;\n}\n\n", ""]);
+exports.push([module.i, "\n.autocomplete {\n  position: relative;\n}\n.autocomplete-results {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  min-height: 90vw !important;\n  /* overflow: auto; */\n}\n.pac-container {\n    min-height: 90% !important;\n}\n.pac-item {\n  min-height: 60px;\n  padding: 4px 2px;\n}\n.autocomplete-result{\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid grey;\n  min-height: 60px;\n  cursor: pointer;\n}\n.autocomplete-result:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n.gm-ui-hover-effect, .gm-style-iw-t::after, .gm-svpc, .gm-control-active, .gmnoprint {\n    display: none !important;\n}\n\n", ""]);
 
 // exports
 
@@ -40995,15 +40983,14 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h3", { staticClass: "my-2 d-flex justify-content-between" }, [
+    _c("h3", { staticClass: "m-2 d-flex justify-content-between" }, [
       _c("div", { on: { click: _vm.goBack } }, [
-        _c("i", { staticClass: "fa fa-chevron-left" }),
+        _c("i", { staticClass: "fas fa-chevron-left" }),
         _vm._v("Back")
       ]),
       _vm._v(" "),
       _c("div", [_vm._v("Dropoff")]),
-      _vm._v(" "),
-      _c("div")
+      _c("div", { staticStyle: { visibility: "hidden" } }, [_vm._v("space")])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "autocomplete mx-2" }, [
@@ -41302,14 +41289,14 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h3", { staticClass: "my-2 d-flex justify-content-between" }, [
-      _c("span", { on: { click: _vm.goBack } }, [
-        _c("i", { staticClass: "fas fa-arrow-left" }),
+    _c("h3", { staticClass: "m-2 d-flex justify-content-between" }, [
+      _c("div", { on: { click: _vm.goBack } }, [
+        _c("i", { staticClass: "fas fa-chevron-left" }),
         _vm._v("Back")
       ]),
       _vm._v(" "),
       _c("div", [_vm._v("Pickup")]),
-      _c("span")
+      _c("div", { staticStyle: { visibility: "hidden" } }, [_vm._v("space")])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "autocomplete mx-2" }, [

@@ -22,7 +22,7 @@ class GetAddressService
 
     protected function filterDistance($latitude, $longitude)
     {
-        $address = Address::select(['*', DB::raw('( 0.621371 * 3959 * acos( cos( radians('.$latitude.') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians('.$longitude.') ) + sin( radians('.$latitude.') ) * sin( radians(latitude) ) ) ) AS distance')])->havingRaw('distance < 500');
+        $address = Address::select(['*', DB::raw('( 0.621371 * 3959 * acos( cos( radians('.$latitude.') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians('.$longitude.') ) + sin( radians('.$latitude.') ) * sin( radians(latitude) ) ) ) AS distance')])->havingRaw('distance < 50');
         return $address;
     }
 
