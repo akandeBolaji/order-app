@@ -28,7 +28,7 @@
             @keydown.enter="onEnter"
             >
             <span class="ml-2">
-                <i class="fa fa-map-marker fa-2x"></i>
+                <i class="fa fa-map-marker"></i>
             </span>
             <span class="ml-3"><b>{{ result.address }}</b></span>
             </li>

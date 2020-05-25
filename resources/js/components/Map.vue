@@ -56,7 +56,7 @@ export default {
                 if (this.checkout) {
                     this.updatePickupLocation('referred', map);
                     this.centerMap(map);
-                    this.makePolyline(map);
+                    this.updateCurveMarker(map);
                 }
             }
             else {
@@ -75,7 +75,7 @@ export default {
                 if (this.checkout) {
                     this.updateDropoffLocation('referred', map);
                     this.centerMap(map);
-                    this.makePolyline(map);
+                    this.updateCurveMarker(map);
                 }
             }
             else  {
@@ -85,20 +85,63 @@ export default {
             }
         },
 
-        makePolyline(map) {
-            var flightPlanCoordinates = [
-                 {lat: this.pickup.lat, lng: this.pickup.lng},
-                 {lat: this.dropoff.lat, lng: this.dropoff.lng},
-            ];
-            var flightPath = new google.maps.Polyline({
-                path: flightPlanCoordinates,
-                geodesic: true,
-                strokeColor: '#006400',
-                strokeOpacity: 1.0,
-                strokeWeight: 3
-                });
+        updateCurveMarker(map) {
+            console.log('map', map);
+            var pos1 = new google.maps.LatLng(this.pickup.lat, this.pickup.lng); // latlng
+            var pos2 =  new google.maps.LatLng(this.dropoff.lat, this.dropoff.lng);
+            console.log('pickup', this.pickup.lat, 'dropoff', this.dropoff.lat)
 
-            flightPath.setMap(map);
+            var curvature = 0.5;
+            var curveMarker;
+
+            google.maps.event.addListenerOnce(map,"projection_changed", function() {
+                var projection = map.getProjection();
+                var p1 = projection.fromLatLngToPoint(pos1); // xy
+                var p2 = projection.fromLatLngToPoint(pos2);
+                console.log('p1', p1, 'p2', p2);
+                if (p1.x > p2.x){
+                    var temp = p2;
+                    p2 = p1;
+                    p1 = temp;
+                    pos1 = pos2;
+                }
+                var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y), // endpoint (p2 relative to p1)
+                m = new google.maps.Point(e.x / 2, e.y / 2), // midpoint
+                o = new google.maps.Point(e.y, -e.x), // orthogonal
+                c = new google.maps.Point( // curve control point
+                    m.x + curvature * o.x,
+                    m.y + curvature * o.y);
+
+                var pathDef = 'M 0,0 ' +
+                    'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
+
+                var zoom = map.getZoom(),
+                    scale = 1 / (Math.pow(2, -zoom));
+
+                var symbol = {
+                    path: pathDef,
+                    scale: scale,
+                    strokeColor: '#006400',
+                    strokeWeight: 2,
+                    fillColor: '#006400'
+                };
+
+
+                if (!curveMarker) {
+                    curveMarker = new google.maps.Marker({
+                        position: pos1,
+                        clickable: false,
+                        icon: symbol,
+                        zIndex: 0, // behind the other markers
+                        map: map
+                    });
+                } else {
+                    curveMarker.setOptions({
+                        position: pos1,
+                        icon: symbol,
+                    });
+                }
+            });
         },
 
         centerMap(map) {

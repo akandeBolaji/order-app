@@ -2293,7 +2293,7 @@ __webpack_require__.r(__webpack_exports__);
 
             _this.centerMap(map);
 
-            _this.makePolyline(map);
+            _this.updateCurveMarker(map);
           }
         } else {
           var _marker = _this.addMarker(_this.dropoff.lat, _this.dropoff.lng, _this.icons.dropoff, map);
@@ -2323,7 +2323,7 @@ __webpack_require__.r(__webpack_exports__);
 
             _this2.centerMap(map);
 
-            _this2.makePolyline(map);
+            _this2.updateCurveMarker(map);
           }
         } else {
           var _marker2 = _this2.addMarker(_this2.pickup.lat, _this2.pickup.lng, _this2.icons.pickup, map);
@@ -2334,22 +2334,63 @@ __webpack_require__.r(__webpack_exports__);
         }
       }(map);
     },
-    makePolyline: function makePolyline(map) {
-      var flightPlanCoordinates = [{
-        lat: this.pickup.lat,
-        lng: this.pickup.lng
-      }, {
-        lat: this.dropoff.lat,
-        lng: this.dropoff.lng
-      }];
-      var flightPath = new google.maps.Polyline({
-        path: flightPlanCoordinates,
-        geodesic: true,
-        strokeColor: '#006400',
-        strokeOpacity: 1.0,
-        strokeWeight: 3
+    updateCurveMarker: function updateCurveMarker(map) {
+      console.log('map', map);
+      var pos1 = new google.maps.LatLng(this.pickup.lat, this.pickup.lng); // latlng
+
+      var pos2 = new google.maps.LatLng(this.dropoff.lat, this.dropoff.lng);
+      console.log('pickup', this.pickup.lat, 'dropoff', this.dropoff.lat);
+      var curvature = 0.5;
+      var curveMarker;
+      google.maps.event.addListenerOnce(map, "projection_changed", function () {
+        var projection = map.getProjection();
+        var p1 = projection.fromLatLngToPoint(pos1); // xy
+
+        var p2 = projection.fromLatLngToPoint(pos2);
+        console.log('p1', p1, 'p2', p2);
+
+        if (p1.x > p2.x) {
+          var temp = p2;
+          p2 = p1;
+          p1 = temp;
+          pos1 = pos2;
+        }
+
+        var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y),
+            // endpoint (p2 relative to p1)
+        m = new google.maps.Point(e.x / 2, e.y / 2),
+            // midpoint
+        o = new google.maps.Point(e.y, -e.x),
+            // orthogonal
+        c = new google.maps.Point( // curve control point
+        m.x + curvature * o.x, m.y + curvature * o.y);
+        var pathDef = 'M 0,0 ' + 'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
+        var zoom = map.getZoom(),
+            scale = 1 / Math.pow(2, -zoom);
+        var symbol = {
+          path: pathDef,
+          scale: scale,
+          strokeColor: '#006400',
+          strokeWeight: 2,
+          fillColor: '#006400'
+        };
+
+        if (!curveMarker) {
+          curveMarker = new google.maps.Marker({
+            position: pos1,
+            clickable: false,
+            icon: symbol,
+            zIndex: 0,
+            // behind the other markers
+            map: map
+          });
+        } else {
+          curveMarker.setOptions({
+            position: pos1,
+            icon: symbol
+          });
+        }
       });
-      flightPath.setMap(map);
     },
     centerMap: function centerMap(map) {
       //Create LatLngBounds object.
@@ -7099,7 +7140,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n}\n.autocomplete-results[data-v-295e7d85], .pac-container[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 90vw;\n  /* overflow: auto; */\n}\n.autocomplete-result[data-v-295e7d85], .pac-container[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid #000;\n  min-height: 40px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover, .pac-container[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
+exports.push([module.i, "\n.autocomplete[data-v-295e7d85] {\n  position: relative;\n}\n.autocomplete-results[data-v-295e7d85] {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  height: 90vw;\n  /* overflow: auto; */\n}\n.autocomplete-result[data-v-295e7d85] {\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid #000;\n  min-height: 40px;\n  cursor: pointer;\n}\n.autocomplete-result[data-v-295e7d85]:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
 
 // exports
 
@@ -41121,7 +41162,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("span", { staticClass: "ml-2" }, [
-      _c("i", { staticClass: "fa fa-map-marker fa-2x" })
+      _c("i", { staticClass: "fa fa-map-marker" })
     ])
   }
 ]
@@ -41434,7 +41475,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("span", { staticClass: "ml-2" }, [
-      _c("i", { staticClass: "fa fa-map-marker fa-2x" })
+      _c("i", { staticClass: "fa fa-map-marker" })
     ])
   }
 ]
