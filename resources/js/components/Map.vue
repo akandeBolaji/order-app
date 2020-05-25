@@ -50,7 +50,7 @@ export default {
             if (type == 'direct') {
                 var map = this.initMap(this.dropoff.lat, this.dropoff.lng);
                 let marker = this.addMarker(this.dropoff.lat, this.dropoff.lng, this.icons.dropoff, map);
-                let text = 'Dropoff';
+                let text = 'Dropoff >';
                 let infowindow = this.setInfowindow(map, marker, text);
                 if (this.checkout) {
                     this.updatePickupLocation('referred', map);
@@ -60,7 +60,7 @@ export default {
             }
             else {
                 let marker = this.addMarker(this.dropoff.lat, this.dropoff.lng, this.icons.dropoff, map);
-                let text = 'Dropoff';
+                let text = 'Dropoff >';
                 let infowindow = this.setInfowindow(map, marker, text);
             }
         },
@@ -69,7 +69,7 @@ export default {
             if (type == 'direct') {
                 var map = this.initMap(this.pickup.lat, this.pickup.lng);
                 let marker = this.addMarker(this.pickup.lat, this.pickup.lng, this.icons.pickup, map);
-                let text = 'Pickup';
+                let text = 'Pickup >';
                 let infowindow = this.setInfowindow(map, marker, text);
                 if (this.checkout) {
                     this.updateDropoffLocation('referred', map);
@@ -79,7 +79,7 @@ export default {
             }
             else  {
                 let marker = this.addMarker(this.pickup.lat, this.pickup.lng, this.icons.pickup, map);
-                let text = 'Pickup';
+                let text = 'Pickup >';
                 let infowindow = this.setInfowindow(map, marker, text);
             }
         },

@@ -213,5 +213,9 @@
     color: white;
   }
 
+  .gm-ui-hover-effect, .gm-style-iw-t::after {
+      display: none !important;
+  }
+
 </style>
 

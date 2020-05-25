@@ -126,6 +126,7 @@
                     this.$refs["drop"], { types: [ 'geocode' ], componentRestrictions: { country: "ng" }, bounds: circle.getBounds(), strictbounds: true });
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
+                        this.isOpen = false;
                         this.$emit('closeDropoff', {
                             'dropoff' : this.dropoff
                         });

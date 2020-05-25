@@ -2110,6 +2110,8 @@ __webpack_require__.r(__webpack_exports__);
       }); //console.log(this.autocomplete);
 
       google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        _this2.isOpen = false;
+
         _this2.$emit('closeDropoff', {
           'dropoff': _this2.dropoff
         });
@@ -2289,7 +2291,7 @@ __webpack_require__.r(__webpack_exports__);
 
           var marker = _this.addMarker(_this.dropoff.lat, _this.dropoff.lng, _this.icons.dropoff, map);
 
-          var text = 'Dropoff';
+          var text = 'Dropoff >';
 
           var infowindow = _this.setInfowindow(map, marker, text);
 
@@ -2303,7 +2305,7 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           var _marker = _this.addMarker(_this.dropoff.lat, _this.dropoff.lng, _this.icons.dropoff, map);
 
-          var _text = 'Dropoff';
+          var _text = 'Dropoff >';
 
           var _infowindow = _this.setInfowindow(map, _marker, _text);
         }
@@ -2319,7 +2321,7 @@ __webpack_require__.r(__webpack_exports__);
 
           var marker = _this2.addMarker(_this2.pickup.lat, _this2.pickup.lng, _this2.icons.pickup, map);
 
-          var text = 'Pickup';
+          var text = 'Pickup >';
 
           var infowindow = _this2.setInfowindow(map, marker, text);
 
@@ -2333,7 +2335,7 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           var _marker2 = _this2.addMarker(_this2.pickup.lat, _this2.pickup.lng, _this2.icons.pickup, map);
 
-          var _text2 = 'Pickup';
+          var _text2 = 'Pickup >';
 
           var _infowindow2 = _this2.setInfowindow(map, _marker2, _text2);
         }
@@ -7166,7 +7168,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.autocomplete {\n  position: relative;\n}\n.autocomplete-results {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  min-height: 90vw !important;\n  /* overflow: auto; */\n}\n.pac-container {\n    min-height: 90% !important;\n}\n.pac-item {\n  min-height: 60px;\n  padding: 4px 2px;\n}\n.autocomplete-result{\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid grey;\n  min-height: 60px;\n  cursor: pointer;\n}\n.autocomplete-result:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n\n", ""]);
+exports.push([module.i, "\n.autocomplete {\n  position: relative;\n}\n.autocomplete-results {\n  padding: 0;\n  margin: 0;\n  border: 1px solid #eeeeee;\n  min-height: 90vw !important;\n  /* overflow: auto; */\n}\n.pac-container {\n    min-height: 90% !important;\n}\n.pac-item {\n  min-height: 60px;\n  padding: 4px 2px;\n}\n.autocomplete-result{\n  list-style: none;\n  text-align: left;\n  padding: 4px 2px;\n  border-bottom: 1px solid grey;\n  min-height: 60px;\n  cursor: pointer;\n}\n.autocomplete-result:hover {\n  background-color: #4AAE9B;\n  color: white;\n}\n.gm-ui-hover-effect, .gm-style-iw-t::after {\n    display: none !important;\n}\n\n", ""]);
 
 // exports
 
