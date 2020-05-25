@@ -29,7 +29,7 @@
             @keydown.enter="onEnter"
             >
             <span class="ml-2">
-                <i class="fa fa-map-marker"></i>
+                <i class="fa fa-map-marker" style="color: grey;"></i>
             </span>
             <span class="ml-3"><b>{{ result.address }}</b></span>
             </li>
@@ -50,6 +50,11 @@
                 pickup: {
                     lat: this.$store.getters.pickup_loc.lat,
                     lng: this.$store.getters.pickup_loc.long,
+                },
+                user: {
+                    lat: this.$store.getters.user.lat,
+                    long: this.$store.getters.user.long,
+                    address: this.$store.getters.user.address,
                 },
                 results: [],
                 isOpen: false,
@@ -92,6 +97,8 @@
                  api
                 .post("/search/address", {
                     'search': this.dropoff,
+                    'lat': this.user.lat,
+                    'long': this.user.long
                 })
                 .then(res => {
                     console.log(this.results);
@@ -161,32 +168,4 @@
         }
     }
 </script>
-<style scoped>
-  .autocomplete {
-    position: relative;
-  }
-
-  .autocomplete-results {
-    padding: 0;
-    margin: 0;
-    border: 1px solid #eeeeee;
-    height: 90vw;
-    /* overflow: auto; */
-  }
-
-  .autocomplete-result {
-    list-style: none;
-    text-align: left;
-    padding: 4px 2px;
-    border-bottom: 1px solid #000;
-    min-height: 40px;
-    cursor: pointer;
-  }
-
-  .autocomplete-result:hover {
-    background-color: #4AAE9B;
-    color: white;
-  }
-
-</style>
 

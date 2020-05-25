@@ -28,7 +28,7 @@
             @keydown.enter="onEnter"
             >
             <span class="ml-2">
-                <i class="fa fa-map-marker"></i>
+                <i class="fa fa-map-marker" style="color: grey;"></i>
             </span>
             <span class="ml-3"><b>{{ result.address }}</b></span>
             </li>
@@ -177,7 +177,7 @@
         }
     }
 </script>
-<style scoped>
+<style>
   .autocomplete {
     position: relative;
   }
@@ -186,16 +186,25 @@
     padding: 0;
     margin: 0;
     border: 1px solid #eeeeee;
-    height: 90vw;
+    min-height: 90vw !important;
     /* overflow: auto; */
   }
 
-  .autocomplete-result {
+  .pac-container {
+      min-height: 90% !important;
+  }
+
+  .pac-item {
+    min-height: 60px;
+    padding: 4px 2px;
+  }
+
+  .autocomplete-result{
     list-style: none;
     text-align: left;
     padding: 4px 2px;
-    border-bottom: 1px solid #000;
-    min-height: 40px;
+    border-bottom: 1px solid grey;
+    min-height: 60px;
     cursor: pointer;
   }
 
