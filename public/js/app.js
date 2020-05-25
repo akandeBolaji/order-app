@@ -2581,7 +2581,9 @@ __webpack_require__.r(__webpack_exports__);
       this.isOpen = true; //send request to server
 
       api.post("/search/address", {
-        'search': this.pickup
+        'search': this.pickup,
+        'lat': this.user.lat,
+        'long': this.user["long"]
       }).then(function (res) {
         console.log(_this.results);
 

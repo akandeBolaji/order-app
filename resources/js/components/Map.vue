@@ -4,7 +4,6 @@
 
 <script>
 import { bus } from '../app';
-import GmapsCubicBezier from '../GmapsCubicBezier';
 export default {
     data() {
       return {

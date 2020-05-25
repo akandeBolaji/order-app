@@ -93,6 +93,8 @@
                  api
                 .post("/search/address", {
                     'search': this.pickup,
+                    'lat': this.user.lat,
+                    'long': this.user.long
                 })
                 .then(res => {
                     console.log(this.results);
