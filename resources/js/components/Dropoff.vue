@@ -167,4 +167,45 @@
         }
     }
 </script>
+<style scoped>
+  .autocomplete {
+    position: relative;
+  }
+
+  .autocomplete-results {
+    padding: 0;
+    margin: 0;
+    border: 1px solid #eeeeee;
+    min-height: 90vw !important;
+    /* overflow: auto; */
+  }
+
+  .pac-container {
+      min-height: 90% !important;
+  }
+
+  .pac-item {
+    min-height: 60px;
+    padding: 4px 2px;
+  }
+
+  .autocomplete-result{
+    list-style: none;
+    text-align: left;
+    padding: 4px 2px;
+    border-bottom: 1px solid grey;
+    min-height: 60px;
+    cursor: pointer;
+  }
+
+  .autocomplete-result:hover {
+    background-color: #4AAE9B;
+    color: white;
+  }
+
+  .gm-ui-hover-effect, .gm-style-iw-t::after, .gm-svpc, .gm-control-active, .gmnoprint {
+      display: none !important;
+  }
+
+</style>
 

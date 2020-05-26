@@ -4,7 +4,7 @@
             <header id="header" class="text-center py-1 lead">
                 <h3>Parcel request</h3>
             </header>
-            <form class="mx-2">
+            <form class="px-2">
                 <div class="form-group">
                     <input type="text"  @focus="openPickup()" v-model="pickup" class="form-control bg-light" placeholder="Pickup Address">
                 </div>
@@ -15,7 +15,7 @@
         </div>
         <Map :class="checkout ? 'map-with-checkout' : 'full-map'"/>
         <div class="card checkout px-2" v-if="checkout">
-            <h2 class="d-flex mt-2">
+            <h2 class="d-flex pt-2">
                 <div class="mr-auto">&#8358;1500,00</div>
                 <div>3.3km | 24 mins</div>
             </h2>
@@ -63,7 +63,7 @@
         width: 100vw;
     }
     .form {
-        height: 15vh;
+        height: 18vh;
     }
     .full-map {
         height: 85vh;
@@ -72,7 +72,7 @@
         height: 70vh;
     }
     .checkout {
-        height: 15vh;
+        height: 12vh;
     }
 </style>
 

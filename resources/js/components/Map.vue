@@ -25,6 +25,8 @@ export default {
           state: this.$store.getters.active,
           checkout: this.$store.getters.checkout,
           key: 'AIzaSyBtUbk85zcb99ugoBfOKbuHbFf8eT3xhf8',
+          marker1 : null,
+          marker2: null,
       }
     },
     mounted() {
@@ -49,13 +51,12 @@ export default {
         updateDropoffLocation(type, map=null) {
             if (type == 'direct') {
                 var map = this.initMap(this.dropoff.lat, this.dropoff.lng);
-                let marker = this.addMarker(this.dropoff.lat, this.dropoff.lng, this.icons.dropoff, map);
+                this.marker2 = this.addMarker(this.dropoff.lat, this.dropoff.lng, this.icons.dropoff, map);
                 let text = 'Dropoff >';
-                let infowindow = this.setInfowindow(map, marker, text);
+                let infowindow = this.setInfowindow(map, this.marker2, text);
                 if (this.checkout) {
                     this.updatePickupLocation('referred', map);
                     this.centerMap(map);
-                    this.updateCurveMarker(map);
                 }
             }
             else {
@@ -68,13 +69,12 @@ export default {
         updatePickupLocation(type, map=null) {
             if (type == 'direct') {
                 var map = this.initMap(this.pickup.lat, this.pickup.lng);
-                let marker = this.addMarker(this.pickup.lat, this.pickup.lng, this.icons.pickup, map);
+                this.marker1 = this.addMarker(this.pickup.lat, this.pickup.lng, this.icons.pickup, map);
                 let text = 'Pickup >';
-                let infowindow = this.setInfowindow(map, marker, text);
+                let infowindow = this.setInfowindow(map, this.marker1, text);
                 if (this.checkout) {
                     this.updateDropoffLocation('referred', map);
                     this.centerMap(map);
-                    this.updateCurveMarker(map);
                 }
             }
             else  {
@@ -93,55 +93,53 @@ export default {
             var curvature = 0.5;
             var curveMarker;
 
-            google.maps.event.addListenerOnce(map,"projection_changed", function() {
-                var projection = map.getProjection();
-                var p1 = projection.fromLatLngToPoint(pos1); // xy
-                var p2 = projection.fromLatLngToPoint(pos2);
-                console.log('p1', p1, 'p2', p2);
-                if (p1.x > p2.x){
-                    var temp = p2;
-                    p2 = p1;
-                    p1 = temp;
-                    pos1 = pos2;
-                }
-                var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y), // endpoint (p2 relative to p1)
-                m = new google.maps.Point(e.x / 2, e.y / 2), // midpoint
-                o = new google.maps.Point(e.y, -e.x), // orthogonal
-                c = new google.maps.Point( // curve control point
-                    m.x + curvature * o.x,
-                    m.y + curvature * o.y);
+            var projection = map.getProjection();
+            var p1 = projection.fromLatLngToPoint(pos1); // xy
+            var p2 = projection.fromLatLngToPoint(pos2);
+            console.log('p1', p1, 'p2', p2);
+            if (p1.x > p2.x){
+                var temp = p2;
+                p2 = p1;
+                p1 = temp;
+                pos1 = pos2;
+            }
+            var e = new google.maps.Point(p2.x - p1.x, p2.y - p1.y), // endpoint (p2 relative to p1)
+            m = new google.maps.Point(e.x / 2, e.y / 2), // midpoint
+            o = new google.maps.Point(e.y, -e.x), // orthogonal
+            c = new google.maps.Point( // curve control point
+                m.x + curvature * o.x,
+                m.y + curvature * o.y);
 
-                var pathDef = 'M 0,0 ' +
-                    'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
+            var pathDef = 'M 0,0 ' +
+                'q ' + c.x + ',' + c.y + ' ' + e.x + ',' + e.y;
 
-                var zoom = map.getZoom(),
-                    scale = 1 / (Math.pow(2, -zoom));
+            var zoom = map.getZoom(),
+                scale = 1 / (Math.pow(2, -zoom));
 
-                var symbol = {
-                    path: pathDef,
-                    scale: scale,
-                    strokeColor: '#006400',
-                    strokeWeight: 2,
-                    fillColor: '#006400'
-                };
+            var symbol = {
+                path: pathDef,
+                scale: scale,
+                strokeColor: '#006400',
+                strokeWeight: 2,
+                fillColor: '#006400'
+            };
 
 
-                if (!curveMarker) {
-                    curveMarker = new google.maps.Marker({
-                        position: pos1,
-                        clickable: false,
-                        draggable: false,
-                        icon: symbol,
-                        zIndex: 0, // behind the other markers
-                        map: map
-                    });
-                } else {
-                    curveMarker.setOptions({
-                        position: pos1,
-                        icon: symbol,
-                    });
-                }
-            });
+            if (!curveMarker) {
+                curveMarker = new google.maps.Marker({
+                    position: pos1,
+                    clickable: false,
+                    draggable: false,
+                    icon: symbol,
+                    zIndex: 0, // behind the other markers
+                    map: map
+                });
+            } else {
+                curveMarker.setOptions({
+                    position: pos1,
+                    icon: symbol,
+                });
+            }
         },
 
         centerMap(map) {
@@ -156,6 +154,18 @@ export default {
             //Center map and adjust Zoom based on the position of all markers.
             map.setCenter(latlngbounds.getCenter());
             map.fitBounds(latlngbounds);
+            google.maps.event.addListener(map, 'projection_changed', () => {
+                this.updateCurveMarker(map)
+            });
+            google.maps.event.addListener(map, 'zoom_changed',() => {
+                this.updateCurveMarker(map)
+            });
+            google.maps.event.addListener(this.marker1, 'position_changed',() => {
+                this.updateCurveMarker(map)
+            });
+            google.maps.event.addListener(this.marker2, 'position_changed', () => {
+                this.updateCurveMarker(map)
+            });
         },
 
         setInfowindow(map, marker, text) {

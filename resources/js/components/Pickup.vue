@@ -177,7 +177,7 @@
         }
     }
 </script>
-<style scoped>
+<style>
   .autocomplete {
     position: relative;
   }
