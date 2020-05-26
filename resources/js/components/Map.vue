@@ -27,6 +27,7 @@ export default {
           key: 'AIzaSyBtUbk85zcb99ugoBfOKbuHbFf8eT3xhf8',
           marker1 : null,
           marker2: null,
+          curveMarker: null,
       }
     },
     mounted() {
@@ -125,8 +126,8 @@ export default {
             };
 
 
-            if (!curveMarker) {
-                curveMarker = new google.maps.Marker({
+            if (!this.curveMarker) {
+                this.curveMarker = new google.maps.Marker({
                     position: pos1,
                     clickable: false,
                     draggable: false,
@@ -135,7 +136,7 @@ export default {
                     map: map
                 });
             } else {
-                curveMarker.setOptions({
+                this.curveMarker.setOptions({
                     position: pos1,
                     icon: symbol,
                 });
