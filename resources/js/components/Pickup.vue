@@ -117,10 +117,15 @@
             displayGoogleAutocomplete() {
                 //this.isOpen = false;
                     //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
-
-                    var autocomplete = new google.maps.places.Autocomplete(
-                    this.$refs["pick"], { location:`${this.user.lat}, ${this.user.long}`, radius:50000, strictbounds: true });
-
+                    console.log('ulag', this.user.lat, this.user.long)
+                    var geolocation = {
+                        lat: this.user.lat,
+                        lng: this.user.long
+                    };
+                    var circle = new google.maps.Circle({center: geolocation, radius: 50000});
+                    var autocomplete = new google.maps.places.Autocomplete(this.$refs["pick"]);
+                    autocomplete.setBounds(circle.getBounds());
+                    autocomplete.setOptions({strictBounds: true})
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
                         this.isOpen = false;

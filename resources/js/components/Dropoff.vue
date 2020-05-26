@@ -117,11 +117,14 @@
                 console.log(this.dropoff);
             },
             displayGoogleAutocomplete() {
-                //this.isOpen = false;
-                    //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.pickup.lat}, ${this.pickup.long}`), radius: 50000 })
-
-                    var autocomplete = new google.maps.places.Autocomplete(
-                     this.$refs["drop"], { location:`${this.user.lat}, ${this.user.long}`, radius:50000, strictbounds: true });
+                    var geolocation = {
+                        lat: this.user.lat,
+                        lng: this.user.long
+                    };
+                    var circle = new google.maps.Circle({center: geolocation, radius: 50000});
+                    var autocomplete = new google.maps.places.Autocomplete(this.$refs["drop"]);
+                    autocomplete.setBounds(circle.getBounds());
+                    autocomplete.setOptions({strictBounds: true})
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
                         this.isOpen = false;
