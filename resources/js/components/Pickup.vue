@@ -119,7 +119,7 @@
                     //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius: 50000 })
 
                     var autocomplete = new google.maps.places.Autocomplete(
-                    this.$refs["pick"], { types: [ 'geocode' ], location: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius:50000, strictbounds: true });
+                    this.$refs["pick"], { location:`${this.user.lat}, ${this.user.long}`, radius:50000, strictbounds: true });
 
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {

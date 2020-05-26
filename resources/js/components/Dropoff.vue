@@ -121,7 +121,7 @@
                     //var circle = new google.maps.Circle({ center: new google.maps.LatLng(`${this.pickup.lat}, ${this.pickup.long}`), radius: 50000 })
 
                     var autocomplete = new google.maps.places.Autocomplete(
-                     this.$refs["drop"], { types: [ 'geocode' ], location: new google.maps.LatLng(`${this.user.lat}, ${this.user.long}`), radius:5000, strictbounds: true });
+                     this.$refs["drop"], { location:`${this.user.lat}, ${this.user.long}`, radius:50000, strictbounds: true });
                     //console.log(this.autocomplete);
                     google.maps.event.addListener(autocomplete, 'place_changed', () => {
                         this.isOpen = false;
